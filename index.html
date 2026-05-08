@@ -32,11 +32,15 @@
 
     --user-bubble-bg: #1C1B18;
     --user-bubble-text: #FFFFFF;
+    --user-bubble-border: transparent;
 
     --input-bg: #FAFAF8;
     --input-border: #E0DDD7;
     --input-text: #1C1B18;
     --input-placeholder: #9E9C97;
+
+    --chat-border: transparent;
+    --border-style: solid;
 
     --accent: #D4622A;
     /* Auto-derive: 80% accent mixed with 20% black. The accentHover token, if set, overrides this. */
@@ -65,12 +69,15 @@
     --radius-bubble: 18px;
     --radius-chat: 20px;
     --radius-input: 14px;
+    --radius-input-button: 10px;
     --radius-toggle: 50%;
     --radius-avatar: 50%;
 
     --widget-width: 380px;
     --widget-height: 580px;
     --msg-font-size: 14px;
+    --header-font-size: 14px;
+    --input-font-size: 14px;
 
     --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
   }
@@ -254,6 +261,15 @@
     flex-wrap: wrap;
   }
 
+  /* Right-side cluster of the Export section heading: format tabs + output-mode segmented. */
+  .export-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .export-toolbar .segmented[hidden] { display: none; }
+
   .builder-panel h2 {
     font-size: 11px;
     font-weight: 500;
@@ -403,6 +419,36 @@
   /* Simple-mode segmented selectors (bubble style + shape) */
   .simple-seg {
     flex-wrap: wrap;
+  }
+
+  /* Right-side cluster in the Style group header: copy button + Light/Dark segmented */
+  .style-group-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .copy-mode-btn {
+    font-family: var(--font-main);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--separator-color);
+    background: transparent;
+    color: var(--page-text-muted);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+    transition: color var(--transition), border-color var(--transition), background var(--transition);
+  }
+
+  .copy-mode-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-light, transparent);
   }
 
   /* Segmented control (Day/Night editing + output mode) */
@@ -829,11 +875,12 @@
     height: var(--widget-height);
     border-radius: var(--radius-chat);
     background: var(--chat-bg);
+    border: 1.5px var(--border-style) var(--chat-border);
     box-shadow: var(--shadow-chat);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: background var(--transition), box-shadow var(--transition), width var(--transition), height var(--transition);
+    transition: background var(--transition), box-shadow var(--transition), width var(--transition), height var(--transition), border-color var(--transition);
     font-family: var(--font-main);
   }
 
@@ -871,7 +918,7 @@
 
   /* .webchat-header-title */
   .webchat-header-title {
-    font-size: 14px;
+    font-size: var(--header-font-size);
     font-weight: 500;
     color: var(--chat-header-text);
     letter-spacing: -0.1px;
@@ -1055,7 +1102,7 @@
   .regular-message.bot {
     background: var(--bot-bubble-bg);
     color: var(--bot-bubble-text);
-    border: 1px solid var(--bot-bubble-border);
+    border: 1.5px var(--border-style) var(--bot-bubble-border);
     border-bottom-left-radius: 6px;
     transition: background var(--transition), color var(--transition), border-color var(--transition);
   }
@@ -1064,8 +1111,9 @@
   .regular-message.user {
     background: var(--user-bubble-bg);
     color: var(--user-bubble-text);
+    border: 1.5px var(--border-style) var(--user-bubble-border);
     border-bottom-right-radius: 6px;
-    transition: background var(--transition), color var(--transition);
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
   }
 
   .msg-time {
@@ -1169,7 +1217,7 @@
     align-items: center;
     gap: 8px;
     background: var(--input-bg);
-    border: 1.5px solid var(--input-border);
+    border: 1.5px var(--border-style) var(--input-border);
     border-radius: var(--radius-input);
     padding: 6px 6px 6px 14px;
     transition: border-color var(--transition), background var(--transition);
@@ -1207,7 +1255,7 @@
     border: none;
     background: transparent;
     font-family: var(--font-main);
-    font-size: 13.5px;
+    font-size: var(--input-font-size);
     color: var(--input-text);
     outline: none;
     min-width: 0;
@@ -1221,7 +1269,7 @@
   .webchat-input-button-send {
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: var(--radius-input-button);
     background: var(--accent);
     border: none;
     cursor: pointer;
@@ -1572,9 +1620,10 @@
     }
   }
 
-  /* Belt-and-braces: prevent any horizontal overflow at the page level.
-     If a child still tries to overflow, this clips rather than pushing the layout sideways. */
-  html, body { overflow-x: hidden; }
+  /* Belt-and-braces: prevent horizontal overflow at the body level only.
+     Putting overflow-x on html breaks position:sticky scroll context, so we keep html
+     unrestricted and clip overflow only on body. */
+  body { overflow-x: hidden; }
 </style>
 
 <!-- Token override style blocks (populated by JS) -->
@@ -1633,20 +1682,26 @@
       <div id="controlsContainer"></div>
     </div>
 
-    <!-- CSS Snippet -->
+    <!-- Export (CSS / JSON) -->
     <div class="builder-section">
       <div class="section-title-row">
-        <h2>CSS Snippet</h2>
-        <div class="segmented" id="outputSegmented" aria-label="Snippet output mode">
-          <button data-output="light">Light only</button>
-          <button data-output="dark">Dark only</button>
-          <button data-output="both" class="active">Both</button>
+        <h2>Export</h2>
+        <div class="export-toolbar">
+          <div class="segmented" id="formatSegmented" aria-label="Export format">
+            <button data-format="css" class="active">CSS</button>
+            <button data-format="json">JSON</button>
+          </div>
+          <div class="segmented" id="outputSegmented" aria-label="Snippet output mode">
+            <button data-output="light">Light only</button>
+            <button data-output="dark">Dark only</button>
+            <button data-output="both" class="active">Both</button>
+          </div>
         </div>
       </div>
 
       <div class="code-block">
         <div class="code-header">
-          <span>style.css</span>
+          <span id="exportFilename">style.css</span>
           <div class="code-actions">
             <button class="action-btn" id="resetBtn" title="Reset to Aurora preset">Reset</button>
             <button class="action-btn primary" id="copyBtn">Copy</button>
@@ -1666,7 +1721,7 @@
       <div class="webchat-header-bar" data-edit-token="chatHeaderBg">
         <div class="webchat-header-logo" data-edit-token="accent" aria-hidden="true">AI</div>
         <div class="header-text">
-          <div class="webchat-header-title" data-edit-token="chatHeaderText">PlayStation Support</div>
+          <div class="webchat-header-title" data-edit-token="chatHeaderText">NiCE Support</div>
           <div class="header-status">
             <span class="status-dot"></span>
             <span>Online &bull; Avg. reply &lt; 1 min</span>
@@ -1692,7 +1747,7 @@
           <div class="webchat-avatar bot" aria-hidden="true">AI</div>
           <div class="msg-group">
             <div class="regular-message bot" data-edit-token="botBubbleBg">
-              Hi there! I'm your PlayStation Support assistant. How can I help you today?
+              Hi! I'm your NiCE Support assistant. How can I help you today?
             </div>
             <div class="msg-time">2:14 PM</div>
           </div>
@@ -1700,15 +1755,15 @@
 
         <div class="webchat-quick-reply-template-replies-container">
           <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Account issue</button>
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">PS5 hardware</button>
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">PSN Store</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Billing question</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Technical issue</button>
           <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Other</button>
         </div>
 
         <div class="webchat-message-row user" style="animation-delay:0.1s">
           <div class="msg-group">
             <div class="regular-message user" data-edit-token="userBubbleBg">
-              I can't log into my PSN account. I changed my email recently.
+              I'm having trouble with my recent invoice — the totals don't match what I expected.
             </div>
             <div class="msg-time">2:15 PM</div>
           </div>
@@ -1719,7 +1774,7 @@
           <div class="webchat-avatar bot" aria-hidden="true">AI</div>
           <div class="msg-group">
             <div class="regular-message bot" data-edit-token="botBubbleBg">
-              Got it - a recent email change can sometimes cause login issues. Let me pull up the account recovery options for you.
+              No problem — I can help with that. Let me pull up your billing details and walk through the line items together.
             </div>
             <div class="msg-time">2:15 PM</div>
           </div>
@@ -1762,7 +1817,7 @@
     <!-- FAB + badge + preview -->
     <div style="display:flex; align-items:center; gap:10px;">
       <div class="webchat-unread-message-preview">
-        Hi! Need help with your account?
+        Hi! Need help with anything?
       </div>
       <button class="webchat-toggle-button" data-edit-token="toggleBg" aria-label="Open support chat" title="Chat with support">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;color:white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -1863,6 +1918,13 @@
     return `0 12px 60px rgba(${rgb},0.25), 0 4px 16px rgba(${rgb},0.12)`;
   }
 
+  // Compose a border shorthand from a color + the global borderStyle token
+  function buildBorder(color, tokenValues) {
+    const style = (tokenValues && tokenValues.borderStyle) || 'solid';
+    if (style === 'none' || !color) return 'none';
+    return `1.5px ${style} ${color}`;
+  }
+
   // Color math helpers used by Simple mode derivation
   function relLuminance(hex) {
     const rgb = hexToRgb(hex).split(',').map(Number);
@@ -1882,6 +1944,43 @@
     return '#' + out.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
   }
 
+  // Hex ↔ HSL for smart-darken (used when copying light → dark)
+  function hexToHsl(hex) {
+    const rgb = hexToRgb(hex).split(',').map(n => Number(n) / 255);
+    const [r, g, b] = rgb;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    let h = 0, s = 0;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+      else if (max === g) h = ((b - r) / d + 2);
+      else h = ((r - g) / d + 4);
+      h *= 60;
+    }
+    return [h, s * 100, l * 100];
+  }
+  function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+      const x = l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return Math.round(x * 255).toString(16).padStart(2, '0');
+    };
+    return ('#' + f(0) + f(8) + f(4)).toUpperCase();
+  }
+
+  // Invert lightness while preserving hue + saturation. Used to convert a light-mode color
+  // into its dark-mode counterpart on a "Copy from light" action.
+  function smartDarken(hex) {
+    if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return hex;
+    const [h, s, l] = hexToHsl(hex);
+    return hslToHex(h, s, 100 - l);
+  }
+
   const TOKEN_DEFS = {
     // ---- Colors ----
     accent: {
@@ -1890,6 +1989,9 @@
       snippet: [
         { sel: `${SEL_ROOT} .webchat-header-logo`, prop: 'background-color' },
         { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'background-color' },
+        // v3's send-button SVG defaults to fill: black (no fill attribute in the markup).
+        // Force the arrow icon to white so it reads on the colored button.
+        { sel: `${SEL_ROOT} .webchat-input-button-send svg, ${SEL_ROOT} .webchat-input-button-send svg path`, prop: 'fill', literal: '#FFFFFF' },
         // v3 renamed quick-reply class; emit both so light v2 + v3 widgets are styled
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
@@ -1902,7 +2004,7 @@
       // When the user leaves this unset, :root's color-mix derivation handles preview hover.
       snippet: [
         { sel: `${SEL_ROOT} .webchat-input-button-send:hover`, prop: 'background-color' },
-        { sel: `${SEL_TOGGLE} .webchat-toggle-button:hover`, prop: 'background-color' },
+        { sel: `${SEL_TOGGLE}:hover`, prop: 'background-color' },
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'background-color' },
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'color', literal: '#FFFFFF' },
       ],
@@ -1920,7 +2022,22 @@
         // Force chat history + input to transparent so the gradient on the outer container shows through
         { sel: `${SEL_ROOT} .webchat-chat-history`, prop: 'background', literal: 'transparent' },
         { sel: `${SEL_ROOT} .webchat-input`, prop: 'background', literal: 'transparent' },
+        // v3 nests the chat content inside extra Emotion-hashed wrappers (between .webchat and
+        // .webchat-chat-history). Force those direct + grandchild divs transparent so the gradient
+        // shows through. Header bar and bubbles have their own bg so they're unaffected.
+        { sel: `${SEL_ROOT} > div, ${SEL_ROOT} > div > div`, prop: 'background', literal: 'transparent' },
+        // Suppress the browser's default :focus outline on the chat history scroll container
+        // (it has tabindex=-1 in v3 so it picks up focus when clicked). The blue/purple ring
+        // around the chat-history area in v3 was the user agent's focus indicator.
+        { sel: `${SEL_ROOT} .webchat-chat-history`, prop: 'outline', literal: 'none' },
+        { sel: `${SEL_ROOT} .webchat-chat-history *:focus`, prop: 'outline', literal: 'none' },
       ],
+    },
+    radiusChat: {
+      label: 'Chat container radius', type: 'slider', group: 'Style',
+      cssVar: '--radius-chat',
+      min: 0, max: 32, unit: 'px',
+      snippet: [{ sel: SEL_ROOT, prop: 'border-radius' }],
     },
     chatHeaderBg: {
       label: 'Header background', type: 'colorWithGradient', group: 'Style',
@@ -1933,55 +2050,159 @@
       snippet: [
         { sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'color' },
         { sel: `${SEL_ROOT} .webchat-header-title`, prop: 'color' },
+        // Header close + minimize button SVG icons follow the header text color
+        { sel: `${SEL_ROOT} .webchat-header-close-button svg, ${SEL_ROOT} .webchat-header-close-button svg path, ${SEL_ROOT} .webchat-header-minimize-button svg, ${SEL_ROOT} .webchat-header-minimize-button svg path`, prop: 'fill' },
       ],
     },
     botBubbleBg: {
       label: 'Bot bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--bot-bubble-bg', gradKey: 'botBubbleGradient',
-      // v3 renamed bubble class to .chat-bubble; emit both for v2 + v3 compatibility
-      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.bot, ${SEL_ROOT} .regular-message.bot`, prop: 'background' }],
+      // In v3 the .user/.bot class lives on the parent .webchat-message-row, not on the bubble.
+      // Selector chains target both v2 (regular-message) and v3 (chat-bubble) structures.
+      snippet: [{ sel: `${SEL_ROOT} .webchat-message-row.bot .chat-bubble, ${SEL_ROOT} .webchat-message-row.bot .regular-message`, prop: 'background' }],
     },
     botBubbleText: {
       label: 'Bot bubble text', type: 'color', group: 'Style',
       cssVar: '--bot-bubble-text',
-      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.bot, ${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
+      snippet: [{ sel: `${SEL_ROOT} .webchat-message-row.bot .chat-bubble, ${SEL_ROOT} .webchat-message-row.bot .regular-message`, prop: 'color' }],
     },
     userBubbleBg: {
       label: 'User bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--user-bubble-bg', gradKey: 'userBubbleGradient',
-      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.user, ${SEL_ROOT} .regular-message.user`, prop: 'background' }],
+      snippet: [{ sel: `${SEL_ROOT} .webchat-message-row.user .chat-bubble, ${SEL_ROOT} .webchat-message-row.user .regular-message`, prop: 'background' }],
     },
     userBubbleText: {
       label: 'User bubble text', type: 'color', group: 'Style',
       cssVar: '--user-bubble-text',
-      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.user, ${SEL_ROOT} .regular-message.user`, prop: 'color' }],
+      snippet: [{ sel: `${SEL_ROOT} .webchat-message-row.user .chat-bubble, ${SEL_ROOT} .webchat-message-row.user .regular-message`, prop: 'color' }],
     },
     inputBg: {
       label: 'Input field', type: 'color', group: 'Style',
       cssVar: '--input-bg',
-      snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'background-color' }],
+      // The .webchat-input-menu-form is the form that wraps both the
+      // .webchat-input-message-container (label + textarea) AND .webchat-input-button-send.
+      // We make the FORM the visible pill so the send button sits inside it. The inner
+      // container is forced transparent + flex-grow so it just acts as a layout slot.
+      // !important is needed because Cognigy's Emotion classes ship with !important on
+      // the container's bg/padding — without it our overrides lose specificity battles.
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'background-color', transform: v => `${v} !important` },
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'display', literal: 'flex !important' },
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'align-items', literal: 'center !important' },
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'gap', literal: '6px !important' },
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'padding', literal: '4px 4px 4px 12px !important' },
+        // Container is now just a layout slot — transparent, no border, fills available space
+        { sel: `${SEL_ROOT} .webchat-input-message-container`, prop: 'background', literal: 'transparent !important' },
+        { sel: `${SEL_ROOT} .webchat-input-message-container`, prop: 'border', literal: 'none !important' },
+        { sel: `${SEL_ROOT} .webchat-input-message-container`, prop: 'padding', literal: '0 !important' },
+        { sel: `${SEL_ROOT} .webchat-input-message-container`, prop: 'flex', literal: '1 1 auto !important' },
+        { sel: `${SEL_ROOT} .webchat-input-message-container`, prop: 'box-shadow', literal: 'none !important' },
+        // Send button: shrink-to-fit so it doesn't overflow the form, plus a tiny right margin
+        // so it visually clears the form's edge padding (matches the manual fix that worked)
+        { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'flex', literal: '0 0 auto !important' },
+        { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'margin-right', literal: '2px !important' },
+        // Suppress the browser's default :focus outline on the textarea
+        { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'outline', literal: 'none !important' },
+        { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'box-shadow', literal: 'none !important' },
+      ],
+    },
+    inputBorder: {
+      label: 'Input border', type: 'color', group: 'Style',
+      cssVar: '--input-border',
+      // Border on the form (the visible pill). Container has its border forced to none above.
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'border', transform: buildBorder },
+      ],
+    },
+    radiusInput: {
+      label: 'Input field radius', type: 'slider', group: 'Style',
+      cssVar: '--radius-input',
+      min: 0, max: 24, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'border-radius' }],
+    },
+    radiusInputButton: {
+      label: 'Send button radius', type: 'slider', group: 'Style',
+      cssVar: '--radius-input-button',
+      min: 0, max: 50, unit: '%',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'border-radius', transform: v => `${v} !important` }],
+    },
+    botBubbleBorder: {
+      label: 'Bot bubble border', type: 'color', group: 'Style',
+      cssVar: '--bot-bubble-border',
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-message-row.bot .chat-bubble, ${SEL_ROOT} .webchat-message-row.bot .regular-message`, prop: 'border', transform: buildBorder },
+      ],
+    },
+    userBubbleBorder: {
+      label: 'User bubble border', type: 'color', group: 'Style',
+      cssVar: '--user-bubble-border',
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-message-row.user .chat-bubble, ${SEL_ROOT} .webchat-message-row.user .regular-message`, prop: 'border', transform: buildBorder },
+      ],
+    },
+    radiusBubble: {
+      label: 'Bubble radius', type: 'slider', group: 'Style',
+      cssVar: '--radius-bubble',
+      min: 0, max: 28, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'border-radius' }],
+    },
+    chatBorder: {
+      label: 'Chat window border', type: 'color', group: 'Style',
+      cssVar: '--chat-border',
+      snippet: [
+        { sel: SEL_ROOT, prop: 'border', transform: buildBorder },
+      ],
+    },
+    borderStyle: {
+      label: 'Border style', type: 'select', group: 'Style',
+      cssVar: '--border-style',
+      // Used by every border-emitting token (input, bubbles, chat window) via buildBorder.
+      // No snippet of its own — its effect is read by the other tokens' transforms.
+      options: [
+        { label: 'Solid', value: 'solid' },
+        { label: 'Dashed', value: 'dashed' },
+        { label: 'Dotted', value: 'dotted' },
+        { label: 'Double', value: 'double' },
+        { label: 'None', value: 'none' },
+      ],
     },
     inputText: {
       label: 'Input text', type: 'color', group: 'Style',
       cssVar: '--input-text',
       snippet: [
         { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'color' },
-        { sel: `${SEL_ROOT} .webchat-input-message-input::placeholder`, prop: 'color',
+        // v2 uses native ::placeholder; v3 uses a separate <label class="webchat-input-message-label">
+        // for the placeholder appearance. Target both with a faded version of input text.
+        { sel: `${SEL_ROOT} .webchat-input-message-input::placeholder, ${SEL_ROOT} .webchat-input-message-label`, prop: 'color',
           transform: v => `color-mix(in srgb, ${v} 60%, transparent)` },
       ],
     },
     badgeBg: {
       label: 'Unread badge', type: 'color', group: 'Style',
       cssVar: '--badge-bg',
-      snippet: [{ sel: `${SEL_TOGGLE} .webchat-unread-message-badge`, prop: 'background-color' }],
+      // Badge can be inside or alongside the toggle depending on version; using the root anchor.
+      snippet: [{ sel: `[data-cognigy-webchat-root] .webchat-unread-message-badge`, prop: 'background-color' }],
     },
     toggleBg: {
-      label: 'Toggle (FAB)', type: 'color', group: 'Style',
+      label: 'Chat button', type: 'color', group: 'Style',
       cssVar: '--toggle-bg',
+      // v3's FAB has #webchatWindowToggleButton (ID selector) styled by Cognigy's bundle.
+      // We can't beat ID specificity from a class/attribute selector, so use !important.
+      // SEL_TOGGLE = [data-cognigy-webchat-root] [data-cognigy-webchat-toggle] which IS the
+      // FAB button (same element with both attribute AND class .webchat-toggle-button).
       snippet: [
-        { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-color' },
-        { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-image', literal: 'none' },
+        { sel: SEL_TOGGLE, prop: 'background-color', transform: v => `${v} !important` },
+        { sel: SEL_TOGGLE, prop: 'background-image', literal: 'none !important' },
+        // FAB icon SVG defaults to fill: black with no fill attribute. Force white so it
+        // reads on a colored FAB. (Same fix pattern as the send button arrow.)
+        { sel: `${SEL_TOGGLE} svg, ${SEL_TOGGLE} svg path`, prop: 'fill', literal: '#FFFFFF' },
       ],
+    },
+    radiusToggle: {
+      label: 'Chat button radius', type: 'slider', group: 'Style',
+      cssVar: '--radius-toggle',
+      min: 0, max: 50, unit: '%',
+      snippet: [{ sel: SEL_TOGGLE, prop: 'border-radius', transform: v => `${v} !important` }],
     },
     shadowColor: {
       label: 'Shadow color', type: 'color', group: 'Style',
@@ -2015,31 +2236,17 @@
       min: 11, max: 18, unit: 'px',
       snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'font-size' }],
     },
-
-    // ---- Shape ----
-    radiusChat: {
-      label: 'Chat container', type: 'slider', group: 'Shape',
-      cssVar: '--radius-chat',
-      min: 0, max: 32, unit: 'px',
-      snippet: [{ sel: SEL_ROOT, prop: 'border-radius' }],
+    headerFontSize: {
+      label: 'Header text size', type: 'slider', group: 'Typography',
+      cssVar: '--header-font-size',
+      min: 12, max: 22, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-header-title`, prop: 'font-size' }],
     },
-    radiusBubble: {
-      label: 'Message bubble', type: 'slider', group: 'Shape',
-      cssVar: '--radius-bubble',
-      min: 0, max: 28, unit: 'px',
-      snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'border-radius' }],
-    },
-    radiusInput: {
-      label: 'Input field', type: 'slider', group: 'Shape',
-      cssVar: '--radius-input',
-      min: 0, max: 24, unit: 'px',
-      snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'border-radius' }],
-    },
-    radiusToggle: {
-      label: 'Toggle (FAB)', type: 'slider', group: 'Shape',
-      cssVar: '--radius-toggle',
-      min: 0, max: 50, unit: '%',
-      snippet: [{ sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'border-radius' }],
+    inputFontSize: {
+      label: 'Input text size', type: 'slider', group: 'Typography',
+      cssVar: '--input-font-size',
+      min: 11, max: 18, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-input-message-input, ${SEL_ROOT} .webchat-input-message-label`, prop: 'font-size' }],
     },
 
     // ---- Sizing ----
@@ -2093,8 +2300,8 @@
         inputBg: '#F4ECDC', inputText: '#1F2D1F',
         badgeBg: '#D4753A', toggleBg: '#1F4D2C',
         shadowColor: '#1F2D1F', shadowStrength: 'soft',
-        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
       dark: {
@@ -2109,8 +2316,8 @@
         inputBg: '#243B2E', inputText: '#F4ECDC',
         badgeBg: '#E89762', toggleBg: '#5FA873',
         shadowColor: '#000000', shadowStrength: 'strong',
-        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2128,8 +2335,8 @@
         inputBg: '#F5F1FF', inputText: '#2D1B69',
         badgeBg: '#EC75A9', toggleBg: '#7B5FE0',
         shadowColor: '#7B5FE0', shadowStrength: 'strong',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
+        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
       dark: {
@@ -2144,8 +2351,8 @@
         inputBg: '#2D1B69', inputText: '#F5F1FF',
         badgeBg: '#EC75A9', toggleBg: '#9B7DEB',
         shadowColor: '#7B5FE0', shadowStrength: 'strong',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
+        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2163,8 +2370,8 @@
         inputBg: '#F5F5F7', inputText: '#1A1F36',
         badgeBg: '#E94545', toggleBg: '#E94545',
         shadowColor: '#E94545', shadowStrength: 'soft',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
       dark: {
@@ -2179,8 +2386,8 @@
         inputBg: '#252B45', inputText: '#FFFFFF',
         badgeBg: '#FF5A5A', toggleBg: '#FF5A5A',
         shadowColor: '#000000', shadowStrength: 'strong',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2197,8 +2404,8 @@
         userBubbleGradient: G_OFF('#1C1C1C', '#3A3A3A', 'down'),
         inputBg: '#F8F8F8', inputText: '#1C1C1C',
         badgeBg: '#1C1C1C', toggleBg: '#1C1C1C',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8, radiusInputButton: 8,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'none',
       },
@@ -2213,8 +2420,8 @@
         userBubbleGradient: G_OFF('#3A3A3A', '#5A5A5A', 'down'),
         inputBg: '#1F1F1F', inputText: '#F0F0F0',
         badgeBg: '#F0F0F0', toggleBg: '#3A3A3A',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8, radiusInputButton: 8,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'none',
       },
@@ -2232,8 +2439,8 @@
         userBubbleGradient: G_ON('#7C3AED', '#EC4899', 'right'),
         inputBg: '#FFF0F5', inputText: '#3A1F5A',
         badgeBg: '#EC4899', toggleBg: '#7C3AED',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
+        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#7C3AED', shadowStrength: 'strong',
       },
@@ -2248,8 +2455,8 @@
         userBubbleGradient: G_ON('#A78BFA', '#F472B6', 'right'),
         inputBg: '#3A2F50', inputText: '#F3E8FF',
         badgeBg: '#F472B6', toggleBg: '#A78BFA',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
+        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2267,8 +2474,8 @@
         userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
         inputBg: '#F8FAFC', inputText: '#0F172A',
         badgeBg: '#10B981', toggleBg: '#0F172A',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#0F172A', shadowStrength: 'soft',
       },
@@ -2283,8 +2490,8 @@
         userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
         inputBg: '#1E293B', inputText: '#F1F5F9',
         badgeBg: '#34D399', toggleBg: '#34D399',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2302,8 +2509,8 @@
         userBubbleGradient: G_ON('#FF6E5F', '#E84A8A', 'right'),
         inputBg: '#FFEEDD', inputText: '#5C2A1A',
         badgeBg: '#E84A8A', toggleBg: '#B43AAB',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#B43AAB', shadowStrength: 'strong',
       },
@@ -2318,8 +2525,8 @@
         userBubbleGradient: G_ON('#FF6E5F', '#C42E7E', 'right'),
         inputBg: '#2E1D2C', inputText: '#FFEEDD',
         badgeBg: '#E84A8A', toggleBg: '#B43AAB',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2336,9 +2543,9 @@
         userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
         userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
         inputBg: '#EBEDEF', inputText: '#2E3338',
-        badgeBg: '#ED4245', toggleBg: '#5865F2',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        badgeBg: '#ED4245', toggleBg: '#5866F2',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#5865F2', shadowStrength: 'soft',
       },
@@ -2352,9 +2559,9 @@
         userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
         userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
         inputBg: '#383A40', inputText: '#DCDDDE',
-        badgeBg: '#F23F42', toggleBg: '#5865F2',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        badgeBg: '#F23F42', toggleBg: '#5866F2',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2373,8 +2580,8 @@
         inputBg: '#FAF7EE', inputText: '#1A1612',
         badgeBg: '#C9A961', toggleBg: '#1A1612',
         shadowColor: '#1A1612', shadowStrength: 'soft',
-        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
+        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
       dark: {
@@ -2389,8 +2596,8 @@
         inputBg: '#352D24', inputText: '#FAF7EE',
         badgeBg: '#C9A961', toggleBg: '#FAF7EE',
         shadowColor: '#000000', shadowStrength: 'soft',
-        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
-        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
+        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50, radiusInputButton: 10,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2405,6 +2612,7 @@
   const state = {
     editingMode: 'light',            // 'light' | 'dark'
     outputMode: 'light',             // 'light' | 'dark' | 'both' — defaults to 'light' (no dark on first load)
+    exportFormat: 'css',             // 'css' | 'json' — which Export tab is active
     activePreset: 'aurora',
     dirty: false,                    // true when user has edited tokens since last load/save
     includeDark: false,              // opt-in; true if user enabled dark mode editing
@@ -2423,6 +2631,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         outputMode: state.outputMode,
+        exportFormat: state.exportFormat,
         activePreset: state.activePreset,
         dirty: state.dirty,
         includeDark: state.includeDark,
@@ -2477,6 +2686,9 @@
       }
       if (parsed.activePreset !== undefined) state.activePreset = parsed.activePreset;
       if (typeof parsed.dirty === 'boolean') state.dirty = parsed.dirty;
+      if (parsed.exportFormat === 'css' || parsed.exportFormat === 'json') {
+        state.exportFormat = parsed.exportFormat;
+      }
 
       if (typeof parsed.simpleMode === 'boolean') state.simpleMode = parsed.simpleMode;
       if (parsed.simple && typeof parsed.simple === 'object') {
@@ -2554,9 +2766,10 @@
 
       for (const target of def.snippet) {
         if (!bySelector.has(target.sel)) bySelector.set(target.sel, []);
+        // transform now receives tokenValues too so border tokens can read borderStyle, etc.
         let out;
         if (target.literal !== undefined) out = target.literal;
-        else if (typeof target.transform === 'function') out = target.transform(finalValue);
+        else if (typeof target.transform === 'function') out = target.transform(finalValue, tokenValues);
         else out = finalValue;
         bySelector.get(target.sel).push({ prop: target.prop, value: out });
       }
@@ -2576,6 +2789,12 @@
   }
 
   function generateSnippet() {
+    const out = state.exportFormat === 'json' ? generateJsonExport() : generateCssExport();
+    document.getElementById('snippetOutput').textContent = out;
+    updateExportChrome();
+  }
+
+  function generateCssExport() {
     const blocks = [];
 
     // When dark mode isn't included, emit only light — no @media block, no dark rules.
@@ -2590,7 +2809,32 @@
         blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(darkInner, 2)}\n}`);
       }
     }
-    document.getElementById('snippetOutput').textContent = blocks.join('\n\n');
+    return blocks.join('\n\n');
+  }
+
+  // Theme JSON the Import button accepts. Light/Dark/Both filter doesn't apply —
+  // JSON always carries the full state so re-importing is faithful.
+  function generateJsonExport() {
+    const presetLabel = state.activePreset
+      ? state.activePreset.charAt(0).toUpperCase() + state.activePreset.slice(1)
+      : 'Untitled';
+    const payload = {
+      version: 1,
+      name: state.dirty ? `${presetLabel} (custom)` : presetLabel,
+      light: state.light,
+    };
+    if (state.includeDark) payload.dark = state.dark;
+    return JSON.stringify(payload, null, 2);
+  }
+
+  // Sync the filename label, the format-tab active state, and the output-mode segmented.
+  function updateExportChrome() {
+    const filename = document.getElementById('exportFilename');
+    if (filename) filename.textContent = state.exportFormat === 'json' ? 'theme.json' : 'style.css';
+    document.querySelectorAll('#formatSegmented button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.format === state.exportFormat);
+    });
+    syncOutputSegmentedUI();
   }
 
   /* =========================================
@@ -2625,7 +2869,7 @@
       `</div>` +
       `<p class="mode-hint">${simpleMode
         ? 'Pick four choices — we derive the rest. Switch to Advanced for full control.'
-        : 'Every token, individually controllable. Simple mode below collapses this to 4 picks.'}</p>` +
+        : 'Every style, individually controllable. Simple mode below collapses this to 4 picks.'}</p>` +
     `</div>`;
 
     for (const [groupName, items] of Object.entries(groups)) {
@@ -2636,15 +2880,22 @@
 
       // Group header
       if (groupName === 'Style') {
-        // h3 + segmented control on the right when dark mode is on
-        let segmented = '';
+        // h3 + segmented control on the right when dark mode is on, plus a "Copy from light"
+        // shortcut: visible whenever dark mode is enabled. Clicking copies AND switches to dark
+        // editing in one action (more discoverable than requiring user to switch first).
+        let rightCluster = '';
         if (includeDark) {
-          segmented = `<div class="segmented" id="editModeSegmented" role="tablist" aria-label="Editing mode">` +
-            `<button data-mode="light" class="${state.editingMode === 'light' ? 'active' : ''}" type="button">☀ Light</button>` +
-            `<button data-mode="dark" class="${state.editingMode === 'dark' ? 'active' : ''}" type="button">🌙 Dark</button>` +
+          const copyBtn = `<button id="copyLightToDarkBtn" class="copy-mode-btn" type="button" title="Copy your light values into dark mode (smart luminance inversion)">↓ Copy light → dark</button>`;
+          rightCluster =
+            `<div class="style-group-actions">` +
+              copyBtn +
+              `<div class="segmented" id="editModeSegmented" role="tablist" aria-label="Editing mode">` +
+                `<button data-mode="light" class="${state.editingMode === 'light' ? 'active' : ''}" type="button">☀ Light</button>` +
+                `<button data-mode="dark" class="${state.editingMode === 'dark' ? 'active' : ''}" type="button">🌙 Dark</button>` +
+              `</div>` +
             `</div>`;
         }
-        html += `<h3><span>${groupName}</span>${segmented}</h3>`;
+        html += `<h3><span>${groupName}</span>${rightCluster}</h3>`;
       } else {
         // Other groups: h3 + (applies to both modes) caption when dark on
         const caption = includeDark ? `<span class="group-caption">applies to both modes</span>` : '';
@@ -2757,6 +3008,10 @@
         if (btn) setEditingMode(btn.dataset.mode);
       });
     }
+
+    // Copy from light button (only present when editing in dark mode)
+    const copyBtn = container.querySelector('#copyLightToDarkBtn');
+    if (copyBtn) copyBtn.addEventListener('click', copyLightToDark);
   }
 
   // Simple-mode renderer: emits 4 control rows (primary color, surface color, bubble style, shape)
@@ -2796,24 +3051,32 @@
   }
 
   function renderControl(key, def, value) {
+    // Graceful defaults so optional/undefined tokens don't render as "undefined" in the UI
+    const isUnset = value === undefined || value === null || value === '';
+    const colorFallback = '#000000';
+    const display = (v) => isUnset ? '—' : v;
+
     switch (def.type) {
-      case 'color':
+      case 'color': {
+        const v = isUnset ? colorFallback : value;
         return `
           <div class="control-row">
             <label for="ctl-${key}">${def.label}</label>
-            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(value)}">
-            <span class="value-display" data-display="${key}">${escapeAttr(value)}</span>
+            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(v)}">
+            <span class="value-display" data-display="${key}">${display(escapeAttr(value))}</span>
           </div>`;
+      }
       case 'colorWithGradient': {
         const grad = state[state.editingMode][def.gradKey] || { enabled: false, from: '#000000', to: '#FFFFFF', dir: 'diag' };
         const enabled = !!grad.enabled;
-        const display = enabled ? 'Gradient' : value;
+        const v = isUnset ? colorFallback : value;
+        const displayText = enabled ? 'Gradient' : (isUnset ? '—' : value);
         let html = `
           <div class="control-row gradient-row">
             <label for="ctl-${key}">${def.label}</label>
-            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(value)}"${enabled ? ' disabled' : ''}>
+            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(v)}"${enabled ? ' disabled' : ''}>
             <button class="gradient-toggle${enabled ? ' active' : ''}" data-grad-toggle="${def.gradKey}" type="button" title="Toggle gradient">${enabled ? '× Gradient' : '+ Gradient'}</button>
-            <span class="value-display" data-display="${key}">${escapeAttr(display)}</span>
+            <span class="value-display" data-display="${key}">${escapeAttr(displayText)}</span>
           </div>`;
         if (enabled) {
           const dirs = ['down','right','diag','radial'].map(d =>
@@ -2829,13 +3092,16 @@
         }
         return html;
       }
-      case 'slider':
+      case 'slider': {
+        // Fall back to mid-range if undefined so the slider has a sensible position
+        const v = isUnset ? Math.round((def.min + def.max) / 2) : value;
         return `
           <div class="control-row">
             <label for="ctl-${key}">${def.label}</label>
-            <input id="ctl-${key}" type="range" data-token="${key}" min="${def.min}" max="${def.max}" value="${value}">
-            <span class="value-display" data-display="${key}">${value}${def.unit || ''}</span>
+            <input id="ctl-${key}" type="range" data-token="${key}" min="${def.min}" max="${def.max}" value="${v}">
+            <span class="value-display" data-display="${key}">${isUnset ? '—' : `${value}${def.unit || ''}`}</span>
           </div>`;
+      }
       case 'number':
         return `
           <div class="control-row">
@@ -2963,6 +3229,9 @@
       shadowStrength: 'soft',
       fontFamily: state.light.fontFamily || "'Inter', system-ui, sans-serif",
       msgFontSize: state.light.msgFontSize || 14,
+      headerFontSize: state.light.headerFontSize || 14,
+      inputFontSize: state.light.inputFontSize || 14,
+      radiusInputButton: state.light.radiusInputButton || 10,
       widgetWidth: state.light.widgetWidth || 380,
       widgetHeight: state.light.widgetHeight || 580,
       ...shape,
@@ -3071,10 +3340,49 @@
   function syncOutputSegmentedUI() {
     const seg = document.getElementById('outputSegmented');
     if (!seg) return;
-    seg.style.display = state.includeDark ? '' : 'none';
+    // Hide when dark isn't included (no choice to make) or when JSON tab is active (filter doesn't apply to JSON).
+    const shouldHide = !state.includeDark || state.exportFormat === 'json';
+    seg.style.display = shouldHide ? 'none' : '';
     seg.querySelectorAll('button').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.output === state.outputMode);
     });
+  }
+
+  // Copy state.light → state.dark with smart luminance inversion on bgs/text.
+  // Accent / badge / toggle stay as-is; gradient stops invert per stop. Called from the
+  // "↓ Copy from light" button visible when editing in dark mode.
+  function copyLightToDark() {
+    const INVERT = new Set([
+      'pageBg', 'chatBg', 'chatHeaderBg', 'botBubbleBg', 'userBubbleBg', 'inputBg',
+      'chatHeaderText', 'botBubbleText', 'userBubbleText', 'inputText',
+      'inputBorder', 'botBubbleBorder', 'userBubbleBorder', 'chatBorder',
+    ]);
+    const PRESERVE = new Set(['accent', 'accentHover', 'badgeBg', 'toggleBg', 'shadowColor']);
+    const GRADIENTS = new Set(['chatBgGradient', 'chatHeaderGradient', 'botBubbleGradient', 'userBubbleGradient']);
+
+    const out = { ...state.dark };
+    for (const [k, v] of Object.entries(state.light)) {
+      if (INVERT.has(k)) {
+        out[k] = smartDarken(v);
+      } else if (PRESERVE.has(k)) {
+        out[k] = v;
+      } else if (GRADIENTS.has(k) && v && typeof v === 'object') {
+        out[k] = { ...v, from: smartDarken(v.from), to: smartDarken(v.to) };
+      } else {
+        // Typography, shape, sizing, shadowStrength, borderStyle, etc. — copy as-is
+        out[k] = v;
+      }
+    }
+    state.dark = out;
+    state.dirty = true;
+    // Auto-switch to Dark editing so the user immediately sees what was applied
+    state.editingMode = 'dark';
+    document.documentElement.setAttribute('data-theme', 'dark');
+    applyTokens();
+    generateSnippet();
+    saveState();
+    renderControls();
+    showToast('Copied & smart-darkened from light');
   }
 
   /* =========================================
@@ -3208,17 +3516,22 @@
   }
 
   function importTheme() {
-    const raw = prompt('Paste theme JSON (must include a "light" object, optionally "dark"):');
+    const raw = prompt('Paste theme JSON (export it from the JSON tab in the Export panel, or paste a custom payload with a "light" object and optional "dark"):');
     if (!raw) return;
     let parsed;
     try { parsed = JSON.parse(raw); }
     catch (e) { alert('Invalid JSON: ' + e.message); return; }
     if (!parsed || typeof parsed !== 'object' || !parsed.light || typeof parsed.light !== 'object') {
-      alert('JSON must include a "light" object with token values.');
+      alert('JSON must include a "light" object with style values.');
       return;
     }
+    // Future-proofing: warn if a newer format version shows up but try anyway.
+    if (parsed.version !== undefined && parsed.version !== 1) {
+      if (!confirm(`This theme is format version ${parsed.version}, which this build doesn't recognize. Try to import anyway?`)) return;
+    }
 
-    const rawName = prompt('Name this imported theme:') || 'Imported';
+    const suggested = (typeof parsed.name === 'string' && parsed.name.trim()) ? parsed.name.trim() : 'Imported';
+    const rawName = prompt('Name this imported theme:', suggested) || suggested;
     const name = rawName.trim().slice(0, 40) || 'Imported';
 
     const themes = loadSavedThemes();
@@ -3408,6 +3721,15 @@
     document.getElementById('outputSegmented').addEventListener('click', e => {
       const btn = e.target.closest('button[data-output]');
       if (btn) setOutputMode(btn.dataset.output);
+    });
+
+    // Export format tabs (CSS / JSON)
+    document.getElementById('formatSegmented').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-format]');
+      if (!btn) return;
+      state.exportFormat = btn.dataset.format === 'json' ? 'json' : 'css';
+      generateSnippet();
+      saveState();
     });
 
     // Preset chips
