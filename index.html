@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cognigy Webchat Theme Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600&family=Open+Sans:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&family=Nunito:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* =========================================
+     ROOT DESIGN TOKENS (defaults)
+     ========================================= */
+  :root {
+    --font-main: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+
+    /* Day mode palette */
+    --page-bg: #F0EDE8;
+    --page-text: #1C1B18;
+    --page-text-muted: #6B6862;
+
+    --chat-bg: #FFFFFF;
+    --chat-header-bg: #1C1B18;
+    --chat-header-text: #FFFFFF;
+    --chat-header-sub: rgba(255,255,255,0.55);
+
+    --bot-bubble-bg: #F4F2EE;
+    --bot-bubble-text: #1C1B18;
+    --bot-bubble-border: #E5E2DC;
+
+    --user-bubble-bg: #1C1B18;
+    --user-bubble-text: #FFFFFF;
+
+    --input-bg: #FAFAF8;
+    --input-border: #E0DDD7;
+    --input-text: #1C1B18;
+    --input-placeholder: #9E9C97;
+
+    --accent: #D4622A;
+    --accent-hover: #BC5424;
+    --accent-light: #FAE8DF;
+
+    --toggle-bg: #1C1B18;
+    --toggle-shadow: rgba(28,27,24,0.25);
+
+    --typing-dot: #B0ADA7;
+
+    /* Avatars derive from controlled tokens so presets don't need to set them */
+    --avatar-bot-bg: var(--accent);
+    --avatar-bot-text: #FFFFFF;
+    --avatar-user-bg: var(--user-bubble-bg);
+    --avatar-user-text: var(--user-bubble-text);
+
+    --badge-bg: #D4622A;
+    --badge-text: #FFFFFF;
+
+    --separator-color: #E5E2DC;
+
+    --shadow-chat: 0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-toggle: 0 4px 20px var(--toggle-shadow);
+
+    --radius-bubble: 18px;
+    --radius-chat: 20px;
+    --radius-input: 14px;
+    --radius-toggle: 50%;
+    --radius-avatar: 50%;
+
+    --widget-width: 380px;
+    --widget-height: 580px;
+    --msg-font-size: 14px;
+
+    --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  [data-theme="night"] {
+    --page-bg: #111110;
+    --page-text: #EAE8E3;
+    --page-text-muted: #7A7874;
+
+    --chat-bg: #1C1B18;
+    --chat-header-bg: #111110;
+    --chat-header-text: #EAE8E3;
+    --chat-header-sub: rgba(234,232,227,0.45);
+
+    --bot-bubble-bg: #262522;
+    --bot-bubble-text: #EAE8E3;
+    --bot-bubble-border: #333230;
+
+    --user-bubble-bg: #D4622A;
+    --user-bubble-text: #FFFFFF;
+
+    --input-bg: #262522;
+    --input-border: #3A3835;
+    --input-text: #EAE8E3;
+    --input-placeholder: #6B6862;
+
+    --accent: #F07A47;
+    --accent-hover: #E86830;
+    --accent-light: rgba(212,98,42,0.15);
+
+    --toggle-bg: #D4622A;
+    --toggle-shadow: rgba(212,98,42,0.35);
+
+    --typing-dot: #5A5854;
+
+    --badge-bg: #F07A47;
+    --badge-text: #1C1B18;
+
+    --separator-color: #2E2C28;
+
+    --shadow-chat: 0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-toggle: 0 4px 20px var(--toggle-shadow);
+  }
+
+  /* =========================================
+     PAGE LAYOUT
+     ========================================= */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-main);
+    background: var(--page-bg);
+    color: var(--page-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 24px 80px;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .page-header {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 36px;
+  }
+
+  .page-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .page-title h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+    color: var(--page-text);
+  }
+
+  .page-title p {
+    font-size: 13px;
+    color: var(--page-text-muted);
+    font-weight: 400;
+  }
+
+  /* =========================================
+     MAIN LAYOUT - TWO COLUMN
+     ========================================= */
+  .main-layout {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* =========================================
+     BUILDER PANEL
+     ========================================= */
+  .builder-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .builder-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .builder-panel h2 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--page-text-muted);
+  }
+
+  /* Preset chips */
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .preset-chip {
+    font-family: var(--font-main);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--separator-color);
+    background: var(--chat-bg);
+    color: var(--page-text);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+  }
+
+  .preset-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .preset-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* Saved themes ("My Themes" section) */
+  .saved-themes-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .saved-theme-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-main);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 4px 6px 4px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--separator-color);
+    background: var(--chat-bg);
+    color: var(--page-text);
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+  }
+
+  .saved-theme-chip:hover {
+    border-color: var(--accent);
+  }
+
+  .saved-theme-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .saved-theme-chip .saved-theme-name {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 4px 0;
+  }
+
+  .saved-theme-chip .saved-theme-delete {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background var(--transition), opacity var(--transition);
+  }
+
+  .saved-theme-chip .saved-theme-delete:hover {
+    opacity: 1;
+    background: rgba(0,0,0,0.1);
+  }
+
+  .saved-theme-chip.active .saved-theme-delete:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .save-theme-btn {
+    font-family: var(--font-main);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px dashed var(--separator-color);
+    background: transparent;
+    color: var(--page-text-muted);
+    cursor: pointer;
+    transition: border-color var(--transition), color var(--transition);
+  }
+
+  .save-theme-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Segmented control (Day/Night editing + output mode) */
+  .segmented {
+    display: inline-flex;
+    background: var(--chat-bg);
+    border: 1px solid var(--separator-color);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .segmented button {
+    font-family: var(--font-main);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--page-text-muted);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .segmented button:hover {
+    color: var(--page-text);
+  }
+
+  .segmented button.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Control groups + rows */
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--separator-color);
+    border-radius: 12px;
+    background: var(--chat-bg);
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .control-group h3 {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--page-text-muted);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--separator-color);
+  }
+
+  .control-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+  }
+
+  .control-row label {
+    font-size: 13px;
+    color: var(--page-text);
+    font-weight: 400;
+  }
+
+  .control-row input[type="color"] {
+    width: 40px;
+    height: 28px;
+    border: 1px solid var(--separator-color);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+  }
+
+  .control-row input[type="range"] {
+    width: 140px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .control-row input[type="number"] {
+    width: 70px;
+    padding: 5px 8px;
+    border: 1px solid var(--separator-color);
+    border-radius: 6px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .control-row select {
+    padding: 5px 8px;
+    border: 1px solid var(--separator-color);
+    border-radius: 6px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-main);
+    font-size: 12px;
+    max-width: 200px;
+    cursor: pointer;
+  }
+
+  .control-row .value-display {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--page-text-muted);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* Code block (snippet output) */
+  .code-block {
+    background: var(--chat-bg);
+    border: 1px solid var(--separator-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--separator-color);
+    font-size: 11px;
+    color: var(--page-text-muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    gap: 8px;
+  }
+
+  .code-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .action-btn {
+    font-family: var(--font-main);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--page-text-muted);
+    background: transparent;
+    border: 1px solid var(--separator-color);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: color var(--transition), background var(--transition), border-color var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .action-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .action-btn.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .action-btn.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: white;
+  }
+
+  pre {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.7;
+    padding: 14px 16px;
+    overflow-x: auto;
+    color: var(--page-text);
+    white-space: pre;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  pre::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  pre::-webkit-scrollbar-thumb {
+    background: var(--separator-color);
+    border-radius: 3px;
+  }
+
+  /* =========================================
+     WEBCHAT WIDGET MOCK
+     ========================================= */
+  .chat-wrapper {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  /* [data-cognigy-webchat-root] [data-cognigy-webchat].webchat */
+  .webchat {
+    width: var(--widget-width);
+    height: var(--widget-height);
+    border-radius: var(--radius-chat);
+    background: var(--chat-bg);
+    box-shadow: var(--shadow-chat);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background var(--transition), box-shadow var(--transition), width var(--transition), height var(--transition);
+    font-family: var(--font-main);
+  }
+
+  /* .webchat-header-bar */
+  .webchat-header-bar {
+    background: var(--chat-header-bg);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    transition: background var(--transition);
+  }
+
+  /* .webchat-header-logo */
+  .webchat-header-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* .webchat-header-title */
+  .webchat-header-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--chat-header-text);
+    letter-spacing: -0.1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-status {
+    font-size: 11.5px;
+    color: var(--chat-header-sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ADE80;
+    flex-shrink: 0;
+  }
+
+  /* .webchat-header-close-button */
+  .webchat-header-close-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+    transition: background var(--transition), color var(--transition);
+    flex-shrink: 0;
+  }
+
+  .webchat-header-close-button:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+
+  /* .webchat-header-rating-button */
+  .webchat-header-rating-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    transition: background var(--transition), color var(--transition);
+    flex-shrink: 0;
+  }
+
+  .webchat-header-rating-button:hover {
+    background: rgba(255,255,255,0.15);
+    color: #FBBF24;
+  }
+
+  /* .webchat-chat-history */
+  .webchat-chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--chat-bg);
+    transition: background var(--transition);
+    scroll-behavior: smooth;
+  }
+
+  .webchat-chat-history::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .webchat-chat-history::-webkit-scrollbar-thumb {
+    background: var(--separator-color);
+    border-radius: 2px;
+  }
+
+  /* Date separator */
+  .date-separator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 12px;
+  }
+
+  .date-separator-line {
+    flex: 1;
+    height: 1px;
+    background: var(--separator-color);
+  }
+
+  .date-separator-text {
+    font-size: 10.5px;
+    color: var(--page-text-muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* .webchat-message-row */
+  .webchat-message-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 4px;
+    animation: msgIn 0.25s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* .webchat-message-row.bot */
+  .webchat-message-row.bot {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  /* .webchat-message-row.user */
+  .webchat-message-row.user {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+  }
+
+  .webchat-message-row.user + .webchat-message-row.user {
+    margin-top: -2px;
+  }
+
+  /* .webchat-avatar */
+  .webchat-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-avatar);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    align-self: flex-end;
+    transition: background var(--transition);
+  }
+
+  /* .webchat-avatar.bot */
+  .webchat-avatar.bot {
+    background: var(--avatar-bot-bg);
+    color: var(--avatar-bot-text);
+  }
+
+  /* .webchat-avatar.user */
+  .webchat-avatar.user {
+    background: var(--avatar-user-bg);
+    color: var(--avatar-user-text);
+  }
+
+  /* .regular-message */
+  .regular-message {
+    max-width: 72%;
+    padding: 10px 14px;
+    border-radius: var(--radius-bubble);
+    font-size: var(--msg-font-size);
+    line-height: 1.55;
+    word-wrap: break-word;
+    position: relative;
+  }
+
+  /* .regular-message.bot */
+  .regular-message.bot {
+    background: var(--bot-bubble-bg);
+    color: var(--bot-bubble-text);
+    border: 1px solid var(--bot-bubble-border);
+    border-bottom-left-radius: 6px;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+
+  /* .regular-message.user */
+  .regular-message.user {
+    background: var(--user-bubble-bg);
+    color: var(--user-bubble-text);
+    border-bottom-right-radius: 6px;
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--page-text-muted);
+    margin-top: 3px;
+    padding: 0 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .webchat-message-row.user .msg-time { text-align: right; }
+  .webchat-message-row.bot .msg-time { text-align: left; }
+
+  .msg-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: calc(100% - 40px);
+  }
+
+  /* Quick replies */
+  .webchat-quick-reply-template-replies-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+    padding-left: 36px;
+  }
+
+  .webchat-quick-reply-template-reply {
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-family: var(--font-main);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+    white-space: nowrap;
+  }
+
+  .webchat-quick-reply-template-reply:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* .webchat-chat-typing-indicator */
+  .webchat-chat-typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    animation: msgIn 0.25s ease both;
+  }
+
+  .typing-bubble {
+    background: var(--bot-bubble-bg);
+    border: 1px solid var(--bot-bubble-border);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--typing-dot);
+    animation: typingBounce 1.2s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.30s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* =========================================
+     WEBCHAT INPUT
+     ========================================= */
+  /* .webchat-input */
+  .webchat-input {
+    flex-shrink: 0;
+    background: var(--chat-bg);
+    border-top: 1px solid var(--separator-color);
+    padding: 12px 14px;
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  /* .webchat-input-menu-form */
+  .webchat-input-menu-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius-input);
+    padding: 6px 6px 6px 14px;
+    transition: border-color var(--transition), background var(--transition);
+  }
+
+  .webchat-input-menu-form:focus-within {
+    border-color: var(--accent);
+  }
+
+  /* .webchat-input-button-menu */
+  .webchat-input-button-menu {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--input-placeholder);
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: color var(--transition), background var(--transition);
+  }
+
+  .webchat-input-button-menu:hover {
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  /* .webchat-input-message-input */
+  .webchat-input-message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-main);
+    font-size: 13.5px;
+    color: var(--input-text);
+    outline: none;
+    min-width: 0;
+  }
+
+  .webchat-input-message-input::placeholder {
+    color: color-mix(in srgb, var(--input-text) 60%, transparent);
+  }
+
+  /* .webchat-input-button-send */
+  .webchat-input-button-send {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: background var(--transition), transform 0.1s;
+  }
+
+  .webchat-input-button-send:hover {
+    background: var(--accent-hover);
+  }
+
+  .webchat-input-button-send:active {
+    transform: scale(0.93);
+  }
+
+  .input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 8px;
+  }
+
+  .input-footer-text {
+    font-size: 10.5px;
+    color: var(--page-text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* =========================================
+     TOGGLE BUTTON (FAB)
+     ========================================= */
+  /* [data-cognigy-webchat-toggle].webchat-toggle-button */
+  .webchat-toggle-button {
+    width: 58px;
+    height: 58px;
+    border-radius: var(--radius-toggle);
+    background: var(--toggle-bg);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--shadow-toggle);
+    transition: background var(--transition), box-shadow var(--transition), transform 0.15s, border-radius var(--transition);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .webchat-toggle-button:hover {
+    transform: scale(1.05);
+  }
+
+  .webchat-toggle-button:active {
+    transform: scale(0.96);
+  }
+
+  /* .webchat-unread-message-badge */
+  .webchat-unread-message-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--page-bg);
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+
+  /* .webchat-unread-message-preview */
+  .webchat-unread-message-preview {
+    background: var(--chat-bg);
+    border: 1px solid var(--separator-color);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--page-text);
+    max-width: 240px;
+    box-shadow: var(--shadow-chat);
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+    align-self: flex-end;
+  }
+
+  /* =========================================
+     ICONS (SVG inline)
+     ========================================= */
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Toast for copy feedback */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--page-text);
+    color: var(--page-bg);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition), transform var(--transition);
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* =========================================
+     RESPONSIVE
+     ========================================= */
+  @media (max-width: 900px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+    }
+    .chat-wrapper {
+      position: static;
+      align-items: center;
+    }
+    .control-row {
+      grid-template-columns: 1fr auto;
+    }
+    .control-row .value-display {
+      grid-column: 2;
+      min-width: auto;
+    }
+  }
+</style>
+
+<!-- Token override style blocks (populated by JS) -->
+<style id="day-overrides"></style>
+<style id="night-overrides"></style>
+</head>
+<body>
+
+<!-- =========================================
+     PAGE HEADER
+     ========================================= -->
+<header class="page-header">
+  <div class="page-title">
+    <h1>Cognigy Webchat Theme Builder</h1>
+    <p>Customize, preview, and copy the CSS for your Cognigy site</p>
+  </div>
+</header>
+
+<!-- =========================================
+     MAIN LAYOUT
+     ========================================= -->
+<div class="main-layout">
+
+  <!-- LEFT: Builder Panel -->
+  <div class="builder-panel">
+
+    <!-- Presets -->
+    <div class="builder-section">
+      <h2>Presets</h2>
+      <div class="preset-row" id="presetRow">
+        <button class="preset-chip" data-preset="modern">Modern</button>
+        <button class="preset-chip" data-preset="minimal">Minimal</button>
+        <button class="preset-chip" data-preset="playful">Playful</button>
+        <button class="preset-chip" data-preset="tech">Tech</button>
+      </div>
+    </div>
+
+    <!-- My Themes -->
+    <div class="builder-section" id="savedThemesSection">
+      <h2>My Themes</h2>
+      <div class="saved-themes-row" id="savedThemesRow"></div>
+    </div>
+
+    <!-- Customize -->
+    <div class="builder-section">
+      <div class="section-title-row">
+        <h2>Customize</h2>
+        <div class="segmented" id="editModeSegmented" role="tablist" aria-label="Editing mode">
+          <button data-mode="day" class="active" role="tab">☀️ Day</button>
+          <button data-mode="night" role="tab">🌙 Night</button>
+        </div>
+      </div>
+      <div id="controlsContainer"></div>
+    </div>
+
+    <!-- CSS Snippet -->
+    <div class="builder-section">
+      <div class="section-title-row">
+        <h2>CSS Snippet</h2>
+        <div class="segmented" id="outputSegmented" aria-label="Snippet output mode">
+          <button data-output="day">Day only</button>
+          <button data-output="night">Night only</button>
+          <button data-output="both" class="active">Both</button>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span>style.css</span>
+          <div class="code-actions">
+            <button class="action-btn" id="resetBtn" title="Reset to Modern preset">Reset</button>
+            <button class="action-btn primary" id="copyBtn">Copy</button>
+          </div>
+        </div>
+        <pre id="snippetOutput"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Live Chat Preview -->
+  <div class="chat-wrapper">
+
+    <!-- Webchat widget mock -->
+    <div class="webchat" role="region" aria-label="Cognigy webchat widget preview">
+
+      <div class="webchat-header-bar">
+        <div class="webchat-header-logo" aria-hidden="true">AI</div>
+        <div class="header-text">
+          <div class="webchat-header-title">PlayStation Support</div>
+          <div class="header-status">
+            <span class="status-dot"></span>
+            <span>Online &bull; Avg. reply &lt; 1 min</span>
+          </div>
+        </div>
+        <button class="webchat-header-rating-button" aria-label="Rate this chat" title="Rate chat">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="webchat-header-close-button" aria-label="Close chat" title="Close">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="webchat-chat-history" id="chatHistory">
+
+        <div class="date-separator">
+          <div class="date-separator-line"></div>
+          <span class="date-separator-text">Today</span>
+          <div class="date-separator-line"></div>
+        </div>
+
+        <div class="webchat-message-row bot">
+          <div class="webchat-avatar bot" aria-hidden="true">AI</div>
+          <div class="msg-group">
+            <div class="regular-message bot">
+              Hi there! I'm your PlayStation Support assistant. How can I help you today?
+            </div>
+            <div class="msg-time">2:14 PM</div>
+          </div>
+        </div>
+
+        <div class="webchat-quick-reply-template-replies-container">
+          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">Account issue</button>
+          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">PS5 hardware</button>
+          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">PSN Store</button>
+          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">Other</button>
+        </div>
+
+        <div class="webchat-message-row user" style="animation-delay:0.1s">
+          <div class="msg-group">
+            <div class="regular-message user">
+              I can't log into my PSN account. I changed my email recently.
+            </div>
+            <div class="msg-time">2:15 PM</div>
+          </div>
+          <div class="webchat-avatar user" aria-hidden="true">DT</div>
+        </div>
+
+        <div class="webchat-message-row bot" style="animation-delay:0.2s">
+          <div class="webchat-avatar bot" aria-hidden="true">AI</div>
+          <div class="msg-group">
+            <div class="regular-message bot">
+              Got it - a recent email change can sometimes cause login issues. Let me pull up the account recovery options for you.
+            </div>
+            <div class="msg-time">2:15 PM</div>
+          </div>
+        </div>
+
+        <div class="webchat-chat-typing-indicator" id="typingIndicator">
+          <div class="webchat-avatar bot" aria-hidden="true">AI</div>
+          <div class="typing-bubble" aria-label="Bot is typing">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="webchat-input">
+        <div class="webchat-input-menu-form">
+          <button class="webchat-input-button-menu" aria-label="Open menu" title="Menu">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <input
+            class="webchat-input-message-input"
+            type="text"
+            placeholder="Type a message..."
+            aria-label="Message input"
+            id="chatInput"
+          />
+          <button class="webchat-input-button-send" aria-label="Send message" onclick="sendMsg()" title="Send">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="input-footer">
+          <span class="input-footer-text">Powered by Cognigy.AI</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAB + badge + preview -->
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="webchat-unread-message-preview">
+        Hi! Need help with your account?
+      </div>
+      <button class="webchat-toggle-button" aria-label="Open support chat" title="Chat with support">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;color:white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="webchat-unread-message-badge" aria-label="2 unread messages">2</div>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+  /* =========================================
+     TOKEN DEFINITIONS
+     Each token has:
+       - cssVar: drives the in-page preview
+       - snippet: array of { sel, prop } targets emitted in the generated CSS
+       - type: control type (color/slider/number/select)
+     ========================================= */
+
+  // Selector parents for emitted CSS
+  const SEL_ROOT   = '[data-cognigy-webchat-root] [data-cognigy-webchat].webchat';
+  const SEL_TOGGLE = '[data-cognigy-webchat-root] [data-cognigy-webchat-toggle]';
+
+  const TOKEN_DEFS = {
+    // ---- Colors ----
+    accent: {
+      label: 'Accent', type: 'color', group: 'Colors',
+      cssVar: '--accent',
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-header-logo`, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
+      ],
+    },
+    pageBg: {
+      label: 'Demo page background', type: 'color', group: 'Colors',
+      cssVar: '--page-bg',
+      previewOnly: true, // Not emitted — page background is outside the widget
+    },
+    chatBg: {
+      label: 'Chat background', type: 'color', group: 'Colors',
+      cssVar: '--chat-bg',
+      snippet: [
+        { sel: SEL_ROOT, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-chat-history`, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-input`, prop: 'background-color' },
+      ],
+    },
+    chatHeaderBg: {
+      label: 'Header background', type: 'color', group: 'Colors',
+      cssVar: '--chat-header-bg',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'background-color' }],
+    },
+    chatHeaderText: {
+      label: 'Header text', type: 'color', group: 'Colors',
+      cssVar: '--chat-header-text',
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'color' },
+        { sel: `${SEL_ROOT} .webchat-header-title`, prop: 'color' },
+      ],
+    },
+    botBubbleBg: {
+      label: 'Bot bubble', type: 'color', group: 'Colors',
+      cssVar: '--bot-bubble-bg',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'background-color' }],
+    },
+    botBubbleText: {
+      label: 'Bot bubble text', type: 'color', group: 'Colors',
+      cssVar: '--bot-bubble-text',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
+    },
+    userBubbleBg: {
+      label: 'User bubble', type: 'color', group: 'Colors',
+      cssVar: '--user-bubble-bg',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'background-color' }],
+    },
+    userBubbleText: {
+      label: 'User bubble text', type: 'color', group: 'Colors',
+      cssVar: '--user-bubble-text',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'color' }],
+    },
+    inputBg: {
+      label: 'Input field', type: 'color', group: 'Colors',
+      cssVar: '--input-bg',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'background-color' }],
+    },
+    inputText: {
+      label: 'Input text', type: 'color', group: 'Colors',
+      cssVar: '--input-text',
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'color' },
+        { sel: `${SEL_ROOT} .webchat-input-message-input::placeholder`, prop: 'color',
+          transform: v => `color-mix(in srgb, ${v} 60%, transparent)` },
+      ],
+    },
+    badgeBg: {
+      label: 'Unread badge', type: 'color', group: 'Colors',
+      cssVar: '--badge-bg',
+      snippet: [{ sel: `${SEL_TOGGLE} .webchat-unread-message-badge`, prop: 'background-color' }],
+    },
+    toggleBg: {
+      label: 'Toggle (FAB)', type: 'color', group: 'Colors',
+      cssVar: '--toggle-bg',
+      snippet: [
+        { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-color' },
+        { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-image', literal: 'none' },
+      ],
+    },
+
+    // ---- Typography ----
+    fontFamily: {
+      label: 'Font', type: 'select', group: 'Typography',
+      cssVar: '--font-main',
+      options: [
+        { label: 'DM Sans', value: "'DM Sans', system-ui, sans-serif" },
+        { label: 'Inter', value: "'Inter', system-ui, sans-serif" },
+        { label: 'Roboto', value: "'Roboto', system-ui, sans-serif" },
+        { label: 'Open Sans', value: "'Open Sans', system-ui, sans-serif" },
+        { label: 'Source Sans 3', value: "'Source Sans 3', system-ui, sans-serif" },
+        { label: 'Poppins', value: "'Poppins', system-ui, sans-serif" },
+        { label: 'Nunito', value: "'Nunito', system-ui, sans-serif" },
+        { label: 'System UI', value: 'system-ui, -apple-system, "Segoe UI", sans-serif' },
+        { label: 'Helvetica', value: '"Helvetica Neue", Arial, sans-serif' },
+        { label: 'Georgia (serif)', value: 'Georgia, "Times New Roman", serif' },
+        { label: 'DM Mono', value: "'DM Mono', monospace" },
+        { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" },
+      ],
+      snippet: [{ sel: SEL_ROOT, prop: 'font-family' }],
+    },
+    msgFontSize: {
+      label: 'Message text size', type: 'slider', group: 'Typography',
+      cssVar: '--msg-font-size',
+      min: 11, max: 18, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message`, prop: 'font-size' }],
+    },
+
+    // ---- Shape ----
+    radiusChat: {
+      label: 'Chat container', type: 'slider', group: 'Shape',
+      cssVar: '--radius-chat',
+      min: 0, max: 32, unit: 'px',
+      snippet: [{ sel: SEL_ROOT, prop: 'border-radius' }],
+    },
+    radiusBubble: {
+      label: 'Message bubble', type: 'slider', group: 'Shape',
+      cssVar: '--radius-bubble',
+      min: 0, max: 28, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message`, prop: 'border-radius' }],
+    },
+    radiusInput: {
+      label: 'Input field', type: 'slider', group: 'Shape',
+      cssVar: '--radius-input',
+      min: 0, max: 24, unit: 'px',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'border-radius' }],
+    },
+    radiusToggle: {
+      label: 'Toggle (FAB)', type: 'slider', group: 'Shape',
+      cssVar: '--radius-toggle',
+      min: 0, max: 50, unit: '%',
+      snippet: [{ sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'border-radius' }],
+    },
+
+    // ---- Sizing ----
+    widgetWidth: {
+      label: 'Width', type: 'number', group: 'Sizing',
+      cssVar: '--widget-width',
+      min: 280, max: 480, unit: 'px',
+      snippet: [{ sel: SEL_ROOT, prop: 'width' }],
+    },
+    widgetHeight: {
+      label: 'Height', type: 'number', group: 'Sizing',
+      cssVar: '--widget-height',
+      min: 400, max: 800, unit: 'px',
+      snippet: [{ sel: SEL_ROOT, prop: 'height' }],
+    },
+
+    // ---- Effect ----
+    shadow: {
+      label: 'Drop shadow', type: 'select', group: 'Effect',
+      cssVar: '--shadow-chat',
+      options: [
+        { label: 'None', value: 'none' },
+        { label: 'Soft', value: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' },
+        { label: 'Strong', value: '0 12px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.12)' },
+      ],
+      snippet: [{ sel: SEL_ROOT, prop: 'box-shadow' }],
+    },
+  };
+
+  /* =========================================
+     PRESETS
+     ========================================= */
+  const PRESETS = {
+    modern: {
+      name: 'Modern',
+      day: {
+        accent: '#D4622A', pageBg: '#F0EDE8', chatBg: '#FFFFFF',
+        chatHeaderBg: '#1C1B18', chatHeaderText: '#FFFFFF',
+        botBubbleBg: '#F4F2EE', botBubbleText: '#1C1B18',
+        userBubbleBg: '#1C1B18', userBubbleText: '#FFFFFF',
+        inputBg: '#FAFAF8', inputText: '#1C1B18',
+        badgeBg: '#D4622A', toggleBg: '#1C1B18',
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 20, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+      },
+      night: {
+        accent: '#F07A47', pageBg: '#111110', chatBg: '#1C1B18',
+        chatHeaderBg: '#111110', chatHeaderText: '#EAE8E3',
+        botBubbleBg: '#262522', botBubbleText: '#EAE8E3',
+        userBubbleBg: '#D4622A', userBubbleText: '#FFFFFF',
+        inputBg: '#262522', inputText: '#EAE8E3',
+        badgeBg: '#F07A47', toggleBg: '#D4622A',
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 20, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+      },
+    },
+    minimal: {
+      name: 'Minimal',
+      day: {
+        accent: '#1C1C1C', pageBg: '#FAFAFA', chatBg: '#FFFFFF',
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#1C1C1C',
+        botBubbleBg: '#F4F4F4', botBubbleText: '#1C1C1C',
+        userBubbleBg: '#1C1C1C', userBubbleText: '#FFFFFF',
+        inputBg: '#F8F8F8', inputText: '#1C1C1C',
+        badgeBg: '#1C1C1C', toggleBg: '#1C1C1C',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: 'none',
+      },
+      night: {
+        accent: '#F0F0F0', pageBg: '#0A0A0A', chatBg: '#141414',
+        chatHeaderBg: '#141414', chatHeaderText: '#F0F0F0',
+        botBubbleBg: '#1F1F1F', botBubbleText: '#F0F0F0',
+        userBubbleBg: '#3A3A3A', userBubbleText: '#F0F0F0',
+        inputBg: '#1F1F1F', inputText: '#F0F0F0',
+        badgeBg: '#F0F0F0', toggleBg: '#3A3A3A',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: 'none',
+      },
+    },
+    playful: {
+      name: 'Playful',
+      day: {
+        accent: '#7C3AED', pageBg: '#FFF7FB', chatBg: '#FFFFFF',
+        chatHeaderBg: '#7C3AED', chatHeaderText: '#FFFFFF',
+        botBubbleBg: '#F3E8FF', botBubbleText: '#3A1F5A',
+        userBubbleBg: '#7C3AED', userBubbleText: '#FFFFFF',
+        inputBg: '#FFF0F5', inputText: '#3A1F5A',
+        badgeBg: '#EC4899', toggleBg: '#7C3AED',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 12px 60px rgba(124,58,237,0.25), 0 4px 16px rgba(124,58,237,0.12)',
+      },
+      night: {
+        accent: '#A78BFA', pageBg: '#1A0B2E', chatBg: '#251A3E',
+        chatHeaderBg: '#3A1F5A', chatHeaderText: '#F3E8FF',
+        botBubbleBg: '#3A2F50', botBubbleText: '#F3E8FF',
+        userBubbleBg: '#A78BFA', userBubbleText: '#1A0B2E',
+        inputBg: '#3A2F50', inputText: '#F3E8FF',
+        badgeBg: '#F472B6', toggleBg: '#A78BFA',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 12px 60px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3)',
+      },
+    },
+    tech: {
+      name: 'Tech',
+      day: {
+        accent: '#10B981', pageBg: '#F8FAFC', chatBg: '#FFFFFF',
+        chatHeaderBg: '#0F172A', chatHeaderText: '#F8FAFC',
+        botBubbleBg: '#F1F5F9', botBubbleText: '#0F172A',
+        userBubbleBg: '#10B981', userBubbleText: '#FFFFFF',
+        inputBg: '#F8FAFC', inputText: '#0F172A',
+        badgeBg: '#10B981', toggleBg: '#0F172A',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06)',
+      },
+      night: {
+        accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
+        chatHeaderBg: '#020617', chatHeaderText: '#F1F5F9',
+        botBubbleBg: '#1E293B', botBubbleText: '#F1F5F9',
+        userBubbleBg: '#10B981', userBubbleText: '#020617',
+        inputBg: '#1E293B', inputText: '#F1F5F9',
+        badgeBg: '#34D399', toggleBg: '#34D399',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+      },
+    },
+  };
+
+  /* =========================================
+     STATE + PERSISTENCE
+     ========================================= */
+  const STORAGE_KEY = 'cognigy-theme-v1';
+
+  const state = {
+    editingMode: 'day',           // 'day' | 'night'
+    outputMode: 'both',            // 'day' | 'night' | 'both'
+    activePreset: 'modern',
+    day: { ...PRESETS.modern.day },
+    night: { ...PRESETS.modern.night },
+  };
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        outputMode: state.outputMode,
+        activePreset: state.activePreset,
+        day: state.day,
+        night: state.night,
+      }));
+    } catch (e) { /* ignore quota errors */ }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      // Merge over Modern defaults so older saves missing newly-added tokens still render
+      if (parsed.day) state.day = { ...PRESETS.modern.day, ...parsed.day };
+      if (parsed.night) state.night = { ...PRESETS.modern.night, ...parsed.night };
+      if (parsed.outputMode) state.outputMode = parsed.outputMode;
+      if (parsed.activePreset !== undefined) state.activePreset = parsed.activePreset;
+    } catch (e) { /* ignore */ }
+  }
+
+  /* =========================================
+     APPLY TOKENS TO PREVIEW
+     ========================================= */
+  function formatVar(key, value) {
+    const def = TOKEN_DEFS[key];
+    if (!def) return '';
+    const unit = (def.unit && (def.type === 'slider' || def.type === 'number')) ? def.unit : '';
+    return `  ${def.cssVar}: ${value}${unit};`;
+  }
+
+  function applyTokens() {
+    const dayLines = Object.entries(state.day)
+      .map(([k, v]) => formatVar(k, v))
+      .filter(Boolean)
+      .join('\n');
+    const nightLines = Object.entries(state.night)
+      .map(([k, v]) => formatVar(k, v))
+      .filter(Boolean)
+      .join('\n');
+
+    document.getElementById('day-overrides').textContent = `:root {\n${dayLines}\n}`;
+    document.getElementById('night-overrides').textContent = `[data-theme="night"] {\n${nightLines}\n}`;
+  }
+
+  /* =========================================
+     SNIPPET GENERATOR
+     ========================================= */
+  function valueWithUnit(key, value) {
+    const def = TOKEN_DEFS[key];
+    if (def.unit && (def.type === 'slider' || def.type === 'number')) {
+      return `${value}${def.unit}`;
+    }
+    return value;
+  }
+
+  function generateModeBlock(tokenValues) {
+    // Group props by selector to emit one rule per selector
+    const bySelector = new Map();
+
+    for (const [key, def] of Object.entries(TOKEN_DEFS)) {
+      if (!def.snippet || def.previewOnly) continue;
+      const value = tokenValues[key];
+      if (value == null || value === '') continue;
+      const finalValue = valueWithUnit(key, value);
+
+      for (const target of def.snippet) {
+        if (!bySelector.has(target.sel)) bySelector.set(target.sel, []);
+        // 'literal' overrides; 'transform' wraps the token value (e.g. color-mix for placeholder)
+        let out;
+        if (target.literal !== undefined) out = target.literal;
+        else if (typeof target.transform === 'function') out = target.transform(finalValue);
+        else out = finalValue;
+        bySelector.get(target.sel).push({ prop: target.prop, value: out });
+      }
+    }
+
+    const blocks = [];
+    for (const [sel, props] of bySelector) {
+      const propLines = props.map(p => `  ${p.prop}: ${p.value};`).join('\n');
+      blocks.push(`${sel} {\n${propLines}\n}`);
+    }
+    return blocks.join('\n\n');
+  }
+
+  function indent(text, spaces) {
+    const pad = ' '.repeat(spaces);
+    return text.split('\n').map(line => line.length ? pad + line : line).join('\n');
+  }
+
+  function generateSnippet() {
+    const blocks = [];
+    if (state.outputMode === 'day' || state.outputMode === 'both') {
+      blocks.push(generateModeBlock(state.day));
+    }
+    if (state.outputMode === 'night' || state.outputMode === 'both') {
+      const nightInner = generateModeBlock(state.night);
+      blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(nightInner, 2)}\n}`);
+    }
+    document.getElementById('snippetOutput').textContent = blocks.join('\n\n');
+  }
+
+  /* =========================================
+     CONTROL RENDERING
+     ========================================= */
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  }
+
+  function renderControls() {
+    const groups = {};
+    for (const [key, def] of Object.entries(TOKEN_DEFS)) {
+      (groups[def.group] ||= []).push({ key, def });
+    }
+
+    const tokens = state[state.editingMode];
+    let html = '';
+    for (const [groupName, items] of Object.entries(groups)) {
+      html += `<div class="control-group" style="margin-top: 4px;">`;
+      html += `<h3>${groupName}</h3>`;
+      for (const { key, def } of items) {
+        html += renderControl(key, def, tokens[key]);
+      }
+      html += `</div>`;
+    }
+
+    // Stack groups with gap
+    const container = document.getElementById('controlsContainer');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '14px';
+    container.innerHTML = html;
+
+    // Wire change events
+    container.querySelectorAll('[data-token]').forEach(input => {
+      input.addEventListener('input', handleTokenChange);
+    });
+  }
+
+  function renderControl(key, def, value) {
+    switch (def.type) {
+      case 'color':
+        return `
+          <div class="control-row">
+            <label for="ctl-${key}">${def.label}</label>
+            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(value)}">
+            <span class="value-display" data-display="${key}">${escapeAttr(value)}</span>
+          </div>`;
+      case 'slider':
+        return `
+          <div class="control-row">
+            <label for="ctl-${key}">${def.label}</label>
+            <input id="ctl-${key}" type="range" data-token="${key}" min="${def.min}" max="${def.max}" value="${value}">
+            <span class="value-display" data-display="${key}">${value}${def.unit || ''}</span>
+          </div>`;
+      case 'number':
+        return `
+          <div class="control-row">
+            <label for="ctl-${key}">${def.label}</label>
+            <input id="ctl-${key}" type="number" data-token="${key}" min="${def.min}" max="${def.max}" value="${value}">
+            <span class="value-display" data-display="${key}">${def.unit || ''}</span>
+          </div>`;
+      case 'select': {
+        const opts = def.options.map(o =>
+          `<option value="${escapeAttr(o.value)}"${o.value === value ? ' selected' : ''}>${o.label}</option>`
+        ).join('');
+        return `
+          <div class="control-row" style="grid-template-columns: 1fr auto;">
+            <label for="ctl-${key}">${def.label}</label>
+            <select id="ctl-${key}" data-token="${key}">${opts}</select>
+          </div>`;
+      }
+    }
+    return '';
+  }
+
+  function handleTokenChange(e) {
+    const key = e.target.dataset.token;
+    const def = TOKEN_DEFS[key];
+    let value = e.target.value;
+
+    // Coerce number/slider values to numbers
+    if (def.type === 'slider' || def.type === 'number') {
+      value = Number(value);
+      if (Number.isNaN(value)) return;
+      // Clamp number inputs (sliders already enforce)
+      if (def.type === 'number') {
+        if (value < def.min) value = def.min;
+        if (value > def.max) value = def.max;
+      }
+    }
+
+    state[state.editingMode][key] = value;
+    state.activePreset = null;
+
+    // Update value display
+    const display = document.querySelector(`[data-display="${key}"]`);
+    if (display) {
+      if (def.type === 'color') display.textContent = value;
+      else if (def.type === 'slider') display.textContent = `${value}${def.unit || ''}`;
+    }
+
+    applyTokens();
+    generateSnippet();
+    saveState();
+    updatePresetChips();
+  }
+
+  /* =========================================
+     SEGMENTED CONTROLS
+     ========================================= */
+  function setEditingMode(mode) {
+    state.editingMode = mode;
+    document.querySelectorAll('#editModeSegmented button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    if (mode === 'night') {
+      document.documentElement.setAttribute('data-theme', 'night');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    renderControls();
+  }
+
+  function setOutputMode(mode) {
+    state.outputMode = mode;
+    document.querySelectorAll('#outputSegmented button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.output === mode);
+    });
+    generateSnippet();
+    saveState();
+  }
+
+  /* =========================================
+     SAVED THEMES ("My Themes")
+     ========================================= */
+  const SAVED_KEY = 'cognigy-themes-saved-v1';
+
+  function loadSavedThemes() {
+    try {
+      const raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+
+  function persistSavedThemes(themes) {
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(themes)); }
+    catch (e) { /* ignore */ }
+  }
+
+  function uniqueThemeName(themes, base) {
+    const names = new Set(themes.map(t => t.name));
+    if (!names.has(base)) return base;
+    let i = 2;
+    while (names.has(`${base} (${i})`)) i++;
+    return `${base} (${i})`;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function saveCurrentTheme() {
+    let name = prompt('Name this theme:');
+    if (name == null) return;
+    name = name.trim();
+    if (!name) { alert('Please enter a name.'); return; }
+    if (name.length > 40) { alert('Name must be 40 characters or fewer.'); return; }
+
+    const themes = loadSavedThemes();
+    const finalName = uniqueThemeName(themes, name);
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+    themes.push({
+      id, name: finalName,
+      day: { ...state.day },
+      night: { ...state.night },
+      savedAt: new Date().toISOString(),
+    });
+    persistSavedThemes(themes);
+    state.activePreset = id;
+    saveState();
+    renderSavedThemes();
+    updatePresetChips();
+  }
+
+  function deleteSavedTheme(id) {
+    const themes = loadSavedThemes();
+    const theme = themes.find(t => t.id === id);
+    if (!theme) return;
+    if (!confirm(`Delete "${theme.name}"?`)) return;
+    const filtered = themes.filter(t => t.id !== id);
+    persistSavedThemes(filtered);
+    if (state.activePreset === id) {
+      state.activePreset = null;
+      saveState();
+    }
+    renderSavedThemes();
+    updatePresetChips();
+  }
+
+  function loadSavedTheme(id) {
+    const themes = loadSavedThemes();
+    const theme = themes.find(t => t.id === id);
+    if (!theme) return;
+    // Merge over Modern defaults so saved themes that predate new tokens still work
+    state.day = { ...PRESETS.modern.day, ...theme.day };
+    state.night = { ...PRESETS.modern.night, ...theme.night };
+    state.activePreset = id;
+    applyTokens();
+    renderControls();
+    generateSnippet();
+    saveState();
+    updatePresetChips();
+  }
+
+  function renderSavedThemes() {
+    const row = document.getElementById('savedThemesRow');
+    const themes = loadSavedThemes();
+    let html = '';
+    for (const t of themes) {
+      const active = state.activePreset === t.id ? ' active' : '';
+      html += `<div class="saved-theme-chip${active}" data-saved-id="${escapeHtml(t.id)}">` +
+        `<button class="saved-theme-name" data-action="load" title="Load theme">${escapeHtml(t.name)}</button>` +
+        `<button class="saved-theme-delete" data-action="delete" aria-label="Delete theme" title="Delete">×</button>` +
+        `</div>`;
+    }
+    html += `<button class="save-theme-btn" id="saveThemeBtn">+ Save current...</button>`;
+    row.innerHTML = html;
+  }
+
+  /* =========================================
+     PRESETS
+     ========================================= */
+  function applyPreset(name) {
+    const preset = PRESETS[name];
+    if (!preset) return;
+    // Merge over Modern defaults so any newly-added tokens are populated
+    state.day = { ...PRESETS.modern.day, ...preset.day };
+    state.night = { ...PRESETS.modern.night, ...preset.night };
+    state.activePreset = name;
+    applyTokens();
+    renderControls();
+    generateSnippet();
+    saveState();
+    updatePresetChips();
+  }
+
+  function updatePresetChips() {
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.preset === state.activePreset);
+    });
+    document.querySelectorAll('.saved-theme-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.savedId === state.activePreset);
+    });
+  }
+
+  /* =========================================
+     COPY + RESET
+     ========================================= */
+  function showToast(text) {
+    const toast = document.getElementById('toast');
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+
+  async function copySnippet() {
+    const text = document.getElementById('snippetOutput').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Copied to clipboard');
+    } catch (err) {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Copied to clipboard'); }
+      catch (e) { showToast('Copy failed — select manually'); }
+      ta.remove();
+    }
+  }
+
+  function resetTheme() {
+    if (!confirm('Reset to the Modern preset? Your customizations will be lost.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state.outputMode = 'both';
+    document.querySelectorAll('#outputSegmented button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.output === 'both');
+    });
+    applyPreset('modern');
+  }
+
+  /* =========================================
+     DEMO INTERACTIONS (kept from original)
+     ========================================= */
+  function selectReply(btn) {
+    const history = document.getElementById('chatHistory');
+    const qr = btn.closest('.webchat-quick-reply-template-replies-container');
+    const text = btn.textContent;
+    const userRow = document.createElement('div');
+    userRow.className = 'webchat-message-row user';
+    userRow.innerHTML = `
+      <div class="msg-group">
+        <div class="regular-message user">${text}</div>
+        <div class="msg-time">Just now</div>
+      </div>
+      <div class="webchat-avatar user" aria-hidden="true">DT</div>
+    `;
+    qr.insertAdjacentElement('afterend', userRow);
+    qr.remove();
+    history.scrollTop = history.scrollHeight;
+  }
+
+  function sendMsg() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const history = document.getElementById('chatHistory');
+    const typing = document.getElementById('typingIndicator');
+    const userRow = document.createElement('div');
+    userRow.className = 'webchat-message-row user';
+    userRow.innerHTML = `
+      <div class="msg-group">
+        <div class="regular-message user">${text}</div>
+        <div class="msg-time">Just now</div>
+      </div>
+      <div class="webchat-avatar user" aria-hidden="true">DT</div>
+    `;
+    history.insertBefore(userRow, typing);
+    input.value = '';
+    history.scrollTop = history.scrollHeight;
+    setTimeout(() => {
+      const botRow = document.createElement('div');
+      botRow.className = 'webchat-message-row bot';
+      botRow.innerHTML = `
+        <div class="webchat-avatar bot" aria-hidden="true">AI</div>
+        <div class="msg-group">
+          <div class="regular-message bot">Thanks for that. I'm looking into it now - one moment.</div>
+          <div class="msg-time">Just now</div>
+        </div>
+      `;
+      history.insertBefore(botRow, typing);
+      history.scrollTop = history.scrollHeight;
+    }, 1600);
+  }
+
+  /* =========================================
+     INIT
+     ========================================= */
+  function init() {
+    loadState();
+
+    // In-panel editing mode segmented control (sole Day/Night switch)
+    document.getElementById('editModeSegmented').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-mode]');
+      if (btn) setEditingMode(btn.dataset.mode);
+    });
+
+    // Output mode segmented control
+    document.getElementById('outputSegmented').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-output]');
+      if (btn) setOutputMode(btn.dataset.output);
+    });
+
+    // Preset chips
+    document.getElementById('presetRow').addEventListener('click', e => {
+      const chip = e.target.closest('button[data-preset]');
+      if (chip) applyPreset(chip.dataset.preset);
+    });
+
+    // Saved themes row (load / delete chips + save button)
+    document.getElementById('savedThemesRow').addEventListener('click', e => {
+      if (e.target.closest('#saveThemeBtn')) { saveCurrentTheme(); return; }
+      const chip = e.target.closest('.saved-theme-chip');
+      if (!chip) return;
+      const id = chip.dataset.savedId;
+      if (e.target.closest('[data-action="delete"]')) deleteSavedTheme(id);
+      else loadSavedTheme(id);
+    });
+
+    // Copy + Reset
+    document.getElementById('copyBtn').addEventListener('click', copySnippet);
+    document.getElementById('resetBtn').addEventListener('click', resetTheme);
+
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMsg();
+    });
+
+    // Initial render
+    setOutputModeUI(state.outputMode);
+    applyTokens();
+    renderControls();
+    renderSavedThemes();
+    generateSnippet();
+    updatePresetChips();
+  }
+
+  function setOutputModeUI(mode) {
+    document.querySelectorAll('#outputSegmented button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.output === mode);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
