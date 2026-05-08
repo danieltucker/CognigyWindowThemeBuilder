@@ -39,7 +39,8 @@
     --input-placeholder: #9E9C97;
 
     --accent: #D4622A;
-    --accent-hover: #BC5424;
+    /* Auto-derive: 80% accent mixed with 20% black. The accentHover token, if set, overrides this. */
+    --accent-hover: color-mix(in srgb, var(--accent) 80%, black 20%);
     --accent-light: #FAE8DF;
 
     --toggle-bg: #1C1B18;
@@ -97,7 +98,7 @@
     --input-placeholder: #6B6862;
 
     --accent: #F07A47;
-    --accent-hover: #E86830;
+    /* --accent-hover inherits from :root (auto-derived from --accent) */
     --accent-light: rgba(212,98,42,0.15);
 
     --toggle-bg: #D4622A;
@@ -134,15 +135,17 @@
 
   .page-header {
     width: 100%;
-    max-width: 1140px;
+    max-width: 1100px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
     margin-bottom: 36px;
   }
 
   .preview-launch-btn {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 50;
     font-family: var(--font-main);
     font-size: 13px;
     font-weight: 500;
@@ -152,13 +155,33 @@
     background: var(--accent);
     color: white;
     cursor: pointer;
-    flex-shrink: 0;
-    transition: background var(--transition), border-color var(--transition);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transition: background var(--transition), border-color var(--transition), transform 0.15s;
   }
 
   .preview-launch-btn:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+
+  /* Dirty indicator on active chip + Save changes button styling */
+  .preset-chip.dirty::before,
+  .saved-theme-chip.dirty .saved-theme-name::before {
+    content: '•';
+    margin-right: 4px;
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .save-theme-changes {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    border-style: solid !important;
+  }
+  .save-theme-changes:hover {
+    background: var(--accent) !important;
+    color: white !important;
   }
 
   .page-title {
@@ -185,11 +208,27 @@
      ========================================= */
   .main-layout {
     width: 100%;
-    max-width: 1140px;
+    max-width: 1100px;
     display: grid;
-    grid-template-columns: 1fr 460px;
-    gap: 48px;
+    /* minmax(0, 1fr) on BOTH columns prevents either side from forcing the layout
+       wider than the available viewport. The 420px on the right is a max-cap, but
+       the column shrinks if it has to. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 40px;
     align-items: start;
+  }
+
+  /* Grid/flex children ignore their content's intrinsic min-width when explicitly set to 0.
+     Without this, a long token name or a wide pre block can blow out the column. */
+  .builder-panel,
+  .chat-wrapper {
+    min-width: 0;
+  }
+
+  /* Snippet pre block scrolls horizontally INTERNALLY rather than expanding its parent. */
+  .code-block,
+  .code-block pre {
+    max-width: 100%;
   }
 
   /* =========================================
@@ -767,11 +806,11 @@
      ========================================= */
   .chat-wrapper {
     position: sticky;
-    top: 24px;
+    top: 80px;       /* clearance for the fixed Preview Live button */
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 20px;
+    gap: 16px;
   }
 
   .preview-tip {
@@ -1331,9 +1370,10 @@
   .preview-modal-content {
     background: var(--chat-bg);
     border-radius: 16px;
-    width: 100%;
-    max-width: 1280px;
-    max-height: calc(100vh - 48px);
+    width: 90vw;
+    height: 90vh;
+    max-width: none;
+    max-height: none;
     display: flex; flex-direction: column;
     overflow: hidden;
     box-shadow: 0 24px 80px rgba(0,0,0,0.4);
@@ -1395,6 +1435,55 @@
     resize: vertical;
   }
 
+  .preview-pane-section { display: flex; flex-direction: column; gap: 6px; }
+  .preview-pane-section input[type="url"] {
+    padding: 10px 12px;
+    border: 1px solid var(--separator-color);
+    border-radius: 8px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+  .preview-pane-section input[type="url"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .preview-hint {
+    font-size: 11px;
+    color: var(--page-text-muted);
+    line-height: 1.45;
+  }
+  .preview-hint code {
+    font-family: var(--font-mono);
+    background: var(--page-bg);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+  .preview-advanced { margin-top: 8px; }
+  .preview-advanced summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--page-text-muted);
+    padding: 6px 0;
+    user-select: none;
+  }
+  .preview-advanced summary:hover { color: var(--accent); }
+  .preview-advanced[open] summary { color: var(--accent); margin-bottom: 6px; }
+  .preview-advanced textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    border: 1px solid var(--separator-color);
+    border-radius: 8px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
   .preview-actions { display: flex; gap: 8px; }
   .preview-actions button { flex: 1; }
 
@@ -1440,13 +1529,32 @@
   /* =========================================
      RESPONSIVE
      ========================================= */
+  /* Stack the layout on mobile / very narrow viewports.
+     Above this width the 2-column layout is forced via minmax(0, 1fr) on the left
+     column, so the controls compress rather than overflow. */
   @media (max-width: 900px) {
     .main-layout {
       grid-template-columns: 1fr;
     }
     .chat-wrapper {
       position: static;
+      top: auto;
       align-items: center;
+      width: 100%;
+    }
+    /* Let the widget shrink below its preset width when the viewport is too narrow */
+    .webchat {
+      width: min(var(--widget-width), 100%);
+      max-width: 100%;
+    }
+    /* Stack the FAB row + preview vertically so the FAB doesn't get pushed off-screen */
+    .chat-wrapper > div[style*="display:flex"] {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .webchat-unread-message-preview {
+      max-width: 100%;
     }
     .control-row {
       grid-template-columns: 1fr auto;
@@ -1455,7 +1563,18 @@
       grid-column: 2;
       min-width: auto;
     }
+    /* Float the Preview Live button slightly smaller on mobile so it doesn't crowd */
+    .preview-launch-btn {
+      top: 12px;
+      right: 12px;
+      padding: 8px 14px;
+      font-size: 12px;
+    }
   }
+
+  /* Belt-and-braces: prevent any horizontal overflow at the page level.
+     If a child still tries to overflow, this clips rather than pushing the layout sideways. */
+  html, body { overflow-x: hidden; }
 </style>
 
 <!-- Token override style blocks (populated by JS) -->
@@ -1472,8 +1591,9 @@
     <h1>Cognigy Webchat Theme Builder</h1>
     <p>Customize, preview, and copy the CSS for your Cognigy site</p>
   </div>
-  <button class="preview-launch-btn" id="previewLaunchBtn" type="button">Preview live ↗</button>
 </header>
+
+<button class="preview-launch-btn" id="previewLaunchBtn" type="button">Preview live ↗</button>
 
 <!-- =========================================
      MAIN LAYOUT
@@ -1487,7 +1607,7 @@
     <div class="builder-section">
       <h2>Presets</h2>
       <div class="preset-row" id="presetRow">
-        <button class="preset-chip" data-preset="halcyon">Halcyon</button>
+        <button class="preset-chip" data-preset="aurora">Aurora</button>
         <button class="preset-chip" data-preset="bloom">Bloom</button>
         <button class="preset-chip" data-preset="hibiscus">Hibiscus</button>
         <button class="preset-chip" data-preset="trailhead">Trailhead</button>
@@ -1495,9 +1615,7 @@
         <button class="preset-chip" data-preset="playful">Playful</button>
         <button class="preset-chip" data-preset="tech">Tech</button>
         <button class="preset-chip" data-preset="sunset">Sunset</button>
-        <button class="preset-chip" data-preset="aurora">Aurora</button>
-        <button class="preset-chip" data-preset="ocean">Ocean</button>
-        <button class="preset-chip" data-preset="onyx">Onyx</button>
+        <button class="preset-chip" data-preset="ivory">Ivory</button>
       </div>
     </div>
 
@@ -1530,7 +1648,7 @@
         <div class="code-header">
           <span>style.css</span>
           <div class="code-actions">
-            <button class="action-btn" id="resetBtn" title="Reset to Halcyon preset">Reset</button>
+            <button class="action-btn" id="resetBtn" title="Reset to Aurora preset">Reset</button>
             <button class="action-btn primary" id="copyBtn">Copy</button>
           </div>
         </div>
@@ -1674,9 +1792,18 @@
     </header>
     <div class="preview-modal-body">
       <div class="preview-script-pane">
-        <label for="previewScriptInput">Cognigy embed scripts</label>
-        <textarea id="previewScriptInput" rows="10" spellcheck="false" autocomplete="off"
-          placeholder='Paste your two &lt;script&gt; tags here, e.g.&#10;&#10;&lt;script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"&gt;&lt;/script&gt;&#10;&lt;script&gt;&#10;  initWebchat("https://endpoint-...cognigy.cloud/...");&#10;&lt;/script&gt;'></textarea>
+        <div class="preview-pane-section">
+          <label for="previewUrlInput">Cognigy endpoint URL</label>
+          <input id="previewUrlInput" type="url" placeholder="https://endpoint-...cognigy.cloud/..." spellcheck="false" autocomplete="off">
+          <p class="preview-hint">Paste the URL passed to <code>initWebchat()</code>. We'll generate the embed scripts for you.</p>
+        </div>
+
+        <details class="preview-advanced">
+          <summary>Use full embed script instead</summary>
+          <textarea id="previewScriptInput" rows="8" spellcheck="false" autocomplete="off"
+            placeholder='Paste your two &lt;script&gt; tags here for custom embeds.'></textarea>
+        </details>
+
         <div class="preview-actions">
           <button class="action-btn primary" id="previewLaunchInner" type="button">Launch</button>
           <button class="action-btn" id="previewClear" type="button">Clear</button>
@@ -1763,8 +1890,21 @@
       snippet: [
         { sel: `${SEL_ROOT} .webchat-header-logo`, prop: 'background-color' },
         { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'background-color' },
-        { sel: `${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
-        { sel: `${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
+        // v3 renamed quick-reply class; emit both so light v2 + v3 widgets are styled
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
+      ],
+    },
+    accentHover: {
+      label: 'Accent (hover)', type: 'color', group: 'Style',
+      cssVar: '--accent-hover',
+      // Hover rules on the actual widget. Both v2 and v3 quick-reply class names emitted.
+      // When the user leaves this unset, :root's color-mix derivation handles preview hover.
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-button-send:hover`, prop: 'background-color' },
+        { sel: `${SEL_TOGGLE} .webchat-toggle-button:hover`, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'background-color' },
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'color', literal: '#FFFFFF' },
       ],
     },
     pageBg: {
@@ -1798,22 +1938,23 @@
     botBubbleBg: {
       label: 'Bot bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--bot-bubble-bg', gradKey: 'botBubbleGradient',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'background' }],
+      // v3 renamed bubble class to .chat-bubble; emit both for v2 + v3 compatibility
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.bot, ${SEL_ROOT} .regular-message.bot`, prop: 'background' }],
     },
     botBubbleText: {
       label: 'Bot bubble text', type: 'color', group: 'Style',
       cssVar: '--bot-bubble-text',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.bot, ${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
     },
     userBubbleBg: {
       label: 'User bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--user-bubble-bg', gradKey: 'userBubbleGradient',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'background' }],
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.user, ${SEL_ROOT} .regular-message.user`, prop: 'background' }],
     },
     userBubbleText: {
       label: 'User bubble text', type: 'color', group: 'Style',
       cssVar: '--user-bubble-text',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'color' }],
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble.user, ${SEL_ROOT} .regular-message.user`, prop: 'color' }],
     },
     inputBg: {
       label: 'Input field', type: 'color', group: 'Style',
@@ -1872,7 +2013,7 @@
       label: 'Message text size', type: 'slider', group: 'Typography',
       cssVar: '--msg-font-size',
       min: 11, max: 18, unit: 'px',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message`, prop: 'font-size' }],
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'font-size' }],
     },
 
     // ---- Shape ----
@@ -1886,7 +2027,7 @@
       label: 'Message bubble', type: 'slider', group: 'Shape',
       cssVar: '--radius-bubble',
       min: 0, max: 28, unit: 'px',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message`, prop: 'border-radius' }],
+      snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'border-radius' }],
     },
     radiusInput: {
       label: 'Input field', type: 'slider', group: 'Shape',
@@ -2218,108 +2359,38 @@
         shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
-    ocean: {
-      name: 'Ocean',
+    ivory: {
+      name: 'Ivory',
       light: {
-        accent: '#1D9BF0', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#EFF3F4', 'down'),
-        chatHeaderBg: '#FFFFFF', chatHeaderText: '#0F1419',
-        chatHeaderGradient: G_OFF('#FFFFFF', '#EFF3F4', 'down'),
-        botBubbleBg: '#EFF3F4', botBubbleText: '#0F1419',
-        botBubbleGradient: G_OFF('#EFF3F4', '#E1E8ED', 'down'),
-        userBubbleBg: '#1D9BF0', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#1D9BF0', '#1A8CD8', 'down'),
-        inputBg: '#EFF3F4', inputText: '#0F1419',
-        badgeBg: '#1D9BF0', toggleBg: '#1D9BF0',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#0F1419', shadowStrength: 'soft',
-      },
-      dark: {
-        accent: '#1D9BF0', pageBg: '#000000', chatBg: '#000000',
-        chatBgGradient: G_ON('#000000', '#0A0E13', 'down'),
-        chatHeaderBg: '#000000', chatHeaderText: '#E7E9EA',
-        chatHeaderGradient: G_OFF('#000000', '#16181C', 'down'),
-        botBubbleBg: '#16181C', botBubbleText: '#E7E9EA',
-        botBubbleGradient: G_OFF('#16181C', '#1F2227', 'down'),
-        userBubbleBg: '#1D9BF0', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#1D9BF0', '#1A8CD8', 'down'),
-        inputBg: '#16181C', inputText: '#E7E9EA',
-        badgeBg: '#1D9BF0', toggleBg: '#1D9BF0',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#000000', shadowStrength: 'strong',
-      },
-    },
-    onyx: {
-      name: 'Onyx',
-      light: {
-        accent: '#C9A961', pageBg: '#0E0B07', chatBg: '#1A1612',
-        chatBgGradient: G_ON('#1A1612', '#0E0B07', 'down'),
-        chatHeaderBg: '#0E0B07', chatHeaderText: '#F5EDD8',
-        chatHeaderGradient: G_OFF('#0E0B07', '#1A1612', 'down'),
-        botBubbleBg: '#221C16', botBubbleText: '#F5EDD8',
-        botBubbleGradient: G_OFF('#221C16', '#2A2520', 'down'),
-        userBubbleBg: '#C9A961', userBubbleText: '#1A1612',
-        userBubbleGradient: G_ON('#C9A961', '#A88B4A', 'diag'),
-        inputBg: '#221C16', inputText: '#F5EDD8',
-        badgeBg: '#C9A961', toggleBg: '#C9A961',
-        shadowColor: '#000000', shadowStrength: 'strong',
+        accent: '#1A1612', pageBg: '#F5F1E8', chatBg: '#FFFFFF',
+        chatBgGradient: G_OFF('#FFFFFF', '#FAF7EE', 'down'),
+        chatHeaderBg: '#FAF7EE', chatHeaderText: '#1A1612',
+        chatHeaderGradient: G_OFF('#FAF7EE', '#F0EAD9', 'down'),
+        botBubbleBg: '#FAF7EE', botBubbleText: '#1A1612',
+        botBubbleGradient: G_OFF('#FAF7EE', '#F0EAD9', 'down'),
+        userBubbleBg: '#1A1612', userBubbleText: '#FAF7EE',
+        userBubbleGradient: G_OFF('#1A1612', '#2A2520', 'diag'),
+        inputBg: '#FAF7EE', inputText: '#1A1612',
+        badgeBg: '#C9A961', toggleBg: '#1A1612',
+        shadowColor: '#1A1612', shadowStrength: 'soft',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
         radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
       },
       dark: {
-        accent: '#D4B978', pageBg: '#000000', chatBg: '#000000',
-        chatBgGradient: G_ON('#000000', '#0A0908', 'down'),
-        chatHeaderBg: '#000000', chatHeaderText: '#F5EDD8',
-        chatHeaderGradient: G_OFF('#000000', '#0A0908', 'down'),
-        botBubbleBg: '#141210', botBubbleText: '#F5EDD8',
-        botBubbleGradient: G_OFF('#141210', '#1A1612', 'down'),
-        userBubbleBg: '#D4B978', userBubbleText: '#000000',
-        userBubbleGradient: G_ON('#D4B978', '#A88B4A', 'diag'),
-        inputBg: '#141210', inputText: '#F5EDD8',
-        badgeBg: '#D4B978', toggleBg: '#D4B978',
-        shadowColor: '#000000', shadowStrength: 'strong',
+        accent: '#C9A961', pageBg: '#1F1A14', chatBg: '#2A241D',
+        chatBgGradient: G_ON('#2A241D', '#1F1A14', 'down'),
+        chatHeaderBg: '#1F1A14', chatHeaderText: '#FAF7EE',
+        chatHeaderGradient: G_OFF('#1F1A14', '#2A241D', 'down'),
+        botBubbleBg: '#352D24', botBubbleText: '#FAF7EE',
+        botBubbleGradient: G_OFF('#352D24', '#3F3629', 'down'),
+        userBubbleBg: '#FAF7EE', userBubbleText: '#1A1612',
+        userBubbleGradient: G_OFF('#FAF7EE', '#E8E0D0', 'diag'),
+        inputBg: '#352D24', inputText: '#FAF7EE',
+        badgeBg: '#C9A961', toggleBg: '#FAF7EE',
+        shadowColor: '#000000', shadowStrength: 'soft',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
         radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-      },
-    },
-    halcyon: {
-      name: 'Halcyon',
-      light: {
-        accent: '#0A84FF', pageBg: '#F2F2F7', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#F5F8FF', 'down'),
-        chatHeaderBg: '#FFFFFF', chatHeaderText: '#1C1C1E',
-        chatHeaderGradient: G_OFF('#FFFFFF', '#F8F8FA', 'down'),
-        botBubbleBg: '#F2F2F7', botBubbleText: '#1C1C1E',
-        botBubbleGradient: G_OFF('#F2F2F7', '#E5E5EA', 'down'),
-        userBubbleBg: '#0A84FF', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_ON('#0A84FF', '#5AC8FA', 'diag'),
-        inputBg: '#F2F2F7', inputText: '#1C1C1E',
-        badgeBg: '#FF3B30', toggleBg: '#0A84FF',
-        shadowColor: '#0A84FF', shadowStrength: 'soft',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 20, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-      },
-      dark: {
-        accent: '#0A84FF', pageBg: '#000000', chatBg: '#1C1C1E',
-        chatBgGradient: G_ON('#1C1C1E', '#000000', 'down'),
-        chatHeaderBg: '#1C1C1E', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#1C1C1E', '#2C2C2E', 'down'),
-        botBubbleBg: '#2C2C2E', botBubbleText: '#FFFFFF',
-        botBubbleGradient: G_OFF('#2C2C2E', '#3A3A3C', 'down'),
-        userBubbleBg: '#0A84FF', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_ON('#0A84FF', '#5AC8FA', 'diag'),
-        inputBg: '#2C2C2E', inputText: '#FFFFFF',
-        badgeBg: '#FF453A', toggleBg: '#0A84FF',
-        shadowColor: '#000000', shadowStrength: 'strong',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
-        radiusChat: 20, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2334,7 +2405,8 @@
   const state = {
     editingMode: 'light',            // 'light' | 'dark'
     outputMode: 'light',             // 'light' | 'dark' | 'both' — defaults to 'light' (no dark on first load)
-    activePreset: 'halcyon',
+    activePreset: 'aurora',
+    dirty: false,                    // true when user has edited tokens since last load/save
     includeDark: false,              // opt-in; true if user enabled dark mode editing
     simpleMode: false,               // false = full controls; true = 4-control simple mode
     simple: {                        // last simple-mode picks (preserved when toggling back to advanced)
@@ -2343,8 +2415,8 @@
       bubble: 'light',               // 'light' | 'dark' (which side gets primary fill)
       shape: 'balanced',             // 'rounded' | 'sharp' | 'balanced'
     },
-    light: { ...PRESETS.halcyon.light },
-    dark:  { ...PRESETS.halcyon.dark },
+    light: { ...PRESETS.aurora.light },
+    dark:  { ...PRESETS.aurora.dark },
   };
 
   function saveState() {
@@ -2352,6 +2424,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         outputMode: state.outputMode,
         activePreset: state.activePreset,
+        dirty: state.dirty,
         includeDark: state.includeDark,
         simpleMode: state.simpleMode,
         simple: state.simple,
@@ -2387,8 +2460,8 @@
       // v1 used day/night; v2 uses light/dark — accept either
       const lightSrc = parsed.light || parsed.day;
       const darkSrc  = parsed.dark  || parsed.night;
-      if (lightSrc) state.light = { ...PRESETS.halcyon.light, ...migrateShadowField(lightSrc) };
-      if (darkSrc)  state.dark  = { ...PRESETS.halcyon.dark,  ...migrateShadowField(darkSrc) };
+      if (lightSrc) state.light = { ...PRESETS.aurora.light, ...migrateShadowField(lightSrc) };
+      if (darkSrc)  state.dark  = { ...PRESETS.aurora.dark,  ...migrateShadowField(darkSrc) };
 
       // includeDark: explicit value wins; else derive from presence of dark colors in legacy
       if (typeof parsed.includeDark === 'boolean') {
@@ -2403,6 +2476,7 @@
         state.outputMode = map[parsed.outputMode] || 'light';
       }
       if (parsed.activePreset !== undefined) state.activePreset = parsed.activePreset;
+      if (typeof parsed.dirty === 'boolean') state.dirty = parsed.dirty;
 
       if (typeof parsed.simpleMode === 'boolean') state.simpleMode = parsed.simpleMode;
       if (parsed.simple && typeof parsed.simple === 'object') {
@@ -2643,7 +2717,7 @@
         const tmp = grad.from;
         grad.from = grad.to;
         grad.to = tmp;
-        state.activePreset = null;
+        state.dirty = true;
         applyTokens();
         generateSnippet();
         saveState();
@@ -2806,7 +2880,7 @@
     } else {
       state[state.editingMode][key] = value;
     }
-    state.activePreset = null;
+    state.dirty = true;
 
     // Update value display
     const display = document.querySelector(`[data-display="${key}"]`);
@@ -2834,7 +2908,7 @@
       });
     }
 
-    state.activePreset = null;
+    state.dirty = true;
     applyTokens();
     generateSnippet();
     saveState();
@@ -2904,16 +2978,39 @@
       ? mixHex(state.simple.surface, '#000000', 0.85)
       : state.simple.surface;
     state.dark = deriveFromSimple({ ...state.simple, surface: darkSurface });
-    state.activePreset = null;
+    state.dirty = true;
+  }
+
+  // Pull the four simple-mode picks out of the current state so toggling Simple ↔ Advanced
+  // is non-destructive — we just adjust the controls UI, not the underlying tokens.
+  function extractSimpleFromState() {
+    const L = state.light;
+    const surface = L.chatBg || '#FFFFFF';
+    const primary = L.accent || L.userBubbleBg || '#0A84FF';
+    const bot = L.botBubbleBg || surface;
+    const distToSurface = colorDistance(bot, surface);
+    const distToPrimary = colorDistance(bot, primary);
+    const bubble = distToSurface <= distToPrimary ? 'light' : 'dark';
+    const r = Number(L.radiusChat || 14);
+    let shape = 'balanced';
+    if (r <= 8) shape = 'sharp';
+    else if (r >= 22) shape = 'rounded';
+    return { primary, surface, bubble, shape };
+  }
+
+  function colorDistance(a, b) {
+    const aRgb = hexToRgb(a).split(',').map(Number);
+    const bRgb = hexToRgb(b).split(',').map(Number);
+    return Math.sqrt(aRgb.reduce((sum, v, i) => sum + (v - bRgb[i]) ** 2, 0));
   }
 
   function setSimpleMode(on) {
     state.simpleMode = !!on;
     if (state.simpleMode) {
-      // Re-derive in case the user tweaked their last simple picks elsewhere
-      applySimpleToState();
-      applyTokens();
-      generateSnippet();
+      // Pull simple picks from current state so the four controls reflect what's on screen.
+      // Crucially, we do NOT call applySimpleToState() here — toggling alone shouldn't rewrite
+      // the theme. Only editing a Simple control (handleSimpleChange) re-derives tokens.
+      state.simple = extractSimpleFromState();
     }
     saveState();
     renderControls();
@@ -3046,6 +3143,7 @@
     });
     persistSavedThemes(themes);
     state.activePreset = id;
+    state.dirty = false;
     saveState();
     renderSavedThemes();
     updatePresetChips();
@@ -3070,19 +3168,21 @@
     const themes = loadSavedThemes();
     const theme = themes.find(t => t.id === id);
     if (!theme) return;
-    // Merge over Halcyon defaults so saved themes that predate new tokens still work
-    state.light = { ...PRESETS.halcyon.light, ...migrateShadowField(theme.light) };
-    state.dark  = { ...PRESETS.halcyon.dark,  ...migrateShadowField(theme.dark) };
+    // Merge over Aurora defaults so saved themes that predate new tokens still work
+    state.light = { ...PRESETS.aurora.light, ...migrateShadowField(theme.light) };
+    state.dark  = { ...PRESETS.aurora.dark,  ...migrateShadowField(theme.dark) };
     // If the saved theme has any dark colors set, surface them by enabling dark mode
     if (theme.dark && Object.keys(theme.dark).length > 0) {
       state.includeDark = true;
     }
     state.activePreset = id;
+    state.dirty = false;
     applyTokens();
     renderControls();
     generateSnippet();
     syncOutputSegmentedUI();
     saveState();
+    renderSavedThemes();
     updatePresetChips();
   }
 
@@ -3091,13 +3191,18 @@
     const themes = loadSavedThemes();
     let html = '';
     for (const t of themes) {
-      const active = state.activePreset === t.id ? ' active' : '';
-      html += `<div class="saved-theme-chip${active}" data-saved-id="${escapeHtml(t.id)}">` +
+      const isActive = state.activePreset === t.id;
+      const cls = `saved-theme-chip${isActive ? ' active' : ''}${isActive && state.dirty ? ' dirty' : ''}`;
+      html += `<div class="${cls}" data-saved-id="${escapeHtml(t.id)}">` +
         `<button class="saved-theme-name" data-action="load" title="Load theme">${escapeHtml(t.name)}</button>` +
         `<button class="saved-theme-delete" data-action="delete" aria-label="Delete theme" title="Delete">×</button>` +
         `</div>`;
     }
-    html += `<button class="save-theme-btn" id="saveThemeBtn">+ Save current...</button>`;
+    const activeSaved = getActiveSavedTheme();
+    if (activeSaved && state.dirty) {
+      html += `<button class="save-theme-btn save-theme-changes" id="saveChangesBtn" title="Overwrite '${escapeHtml(activeSaved.name)}'">⬆ Save changes</button>`;
+    }
+    html += `<button class="save-theme-btn" id="saveThemeBtn">+ Save as new…</button>`;
     html += `<button class="save-theme-btn" id="importThemeBtn">⇣ Import…</button>`;
     row.innerHTML = html;
   }
@@ -3138,28 +3243,60 @@
   function applyPreset(name) {
     const preset = PRESETS[name];
     if (!preset) return;
-    // Merge over Halcyon defaults so any newly-added tokens are populated.
+    // Merge over Aurora defaults so any newly-added tokens are populated.
     // Don't change includeDark — preset's dark palette gets loaded into state.dark either way,
     // and surfaces in the UI only when the user opts in.
-    state.light = { ...PRESETS.halcyon.light, ...preset.light };
-    state.dark  = { ...PRESETS.halcyon.dark,  ...preset.dark };
+    state.light = { ...PRESETS.aurora.light, ...preset.light };
+    state.dark  = { ...PRESETS.aurora.dark,  ...preset.dark };
     state.activePreset = name;
+    state.dirty = false;
     // Exit Simple mode when applying a preset — preset implies user wants the full palette
     if (state.simpleMode) state.simpleMode = false;
     applyTokens();
     renderControls();
     generateSnippet();
     saveState();
+    renderSavedThemes();
     updatePresetChips();
   }
 
   function updatePresetChips() {
     document.querySelectorAll('.preset-chip').forEach(chip => {
-      chip.classList.toggle('active', chip.dataset.preset === state.activePreset);
+      const isActive = chip.dataset.preset === state.activePreset;
+      chip.classList.toggle('active', isActive);
+      chip.classList.toggle('dirty', isActive && state.dirty);
     });
-    document.querySelectorAll('.saved-theme-chip').forEach(chip => {
-      chip.classList.toggle('active', chip.dataset.savedId === state.activePreset);
-    });
+    // Saved themes row needs a re-render rather than a class toggle, because the
+    // "Save changes" button appears/disappears with dirty state.
+    renderSavedThemes();
+  }
+
+  function getActiveSavedTheme() {
+    if (!state.activePreset) return null;
+    const themes = loadSavedThemes();
+    return themes.find(t => t.id === state.activePreset) || null;
+  }
+
+  function saveChangesToActiveTheme() {
+    const themes = loadSavedThemes();
+    const idx = themes.findIndex(t => t.id === state.activePreset);
+    if (idx === -1) {
+      // Active preset isn't a saved theme — fall back to save-as-new
+      saveCurrentTheme();
+      return;
+    }
+    themes[idx] = {
+      ...themes[idx],
+      light: { ...state.light },
+      dark:  { ...state.dark },
+      savedAt: new Date().toISOString(),
+    };
+    persistSavedThemes(themes);
+    state.dirty = false;
+    saveState();
+    renderSavedThemes();
+    updatePresetChips();
+    showToast(`Saved changes to "${themes[idx].name}"`);
   }
 
   /* =========================================
@@ -3193,14 +3330,15 @@
   }
 
   function resetTheme() {
-    if (!confirm('Reset to the Halcyon preset? Your customizations will be lost.')) return;
+    if (!confirm('Reset to the Aurora preset? Your customizations will be lost.')) return;
     localStorage.removeItem(STORAGE_KEY);
     state.outputMode = 'light';
     state.includeDark = false;
     state.editingMode = 'light';
+    state.dirty = false;
     document.documentElement.removeAttribute('data-theme');
     syncOutputSegmentedUI();
-    applyPreset('halcyon');
+    applyPreset('aurora');
   }
 
   /* =========================================
@@ -3278,8 +3416,9 @@
       if (chip) applyPreset(chip.dataset.preset);
     });
 
-    // Saved themes row (load / delete chips + save button + import button)
+    // Saved themes row (load / delete chips + save buttons + import button)
     document.getElementById('savedThemesRow').addEventListener('click', e => {
+      if (e.target.closest('#saveChangesBtn')) { saveChangesToActiveTheme(); return; }
       if (e.target.closest('#saveThemeBtn')) { saveCurrentTheme(); return; }
       if (e.target.closest('#importThemeBtn')) { importTheme(); return; }
       const chip = e.target.closest('.saved-theme-chip');
@@ -3358,27 +3497,50 @@
      LIVE COGNIGY PREVIEW
      ========================================= */
   const PREVIEW_KEY = 'cognigy-preview-script-v1';
+  const PREVIEW_URL_KEY = 'cognigy-preview-url-v1';
 
   function openPreview() {
     document.getElementById('previewModal').hidden = false;
     document.body.style.overflow = 'hidden';
-    const saved = localStorage.getItem(PREVIEW_KEY) || '';
-    document.getElementById('previewScriptInput').value = saved;
-    if (saved.trim()) launchPreview();
+    const savedUrl = localStorage.getItem(PREVIEW_URL_KEY) || '';
+    const savedScript = localStorage.getItem(PREVIEW_KEY) || '';
+    document.getElementById('previewUrlInput').value = savedUrl;
+    document.getElementById('previewScriptInput').value = savedScript;
+    // If the user previously used the full-script path, expand the advanced section
+    if (savedScript.trim()) {
+      document.querySelector('.preview-advanced').open = true;
+    }
+    if (savedUrl.trim() || savedScript.trim()) launchPreview();
   }
 
   function closePreview() {
     document.getElementById('previewModal').hidden = true;
     document.body.style.overflow = '';
-    // Stop the running widget by clearing the iframe
     document.getElementById('previewFrame').srcdoc = '';
   }
 
   function launchPreview() {
-    const script = document.getElementById('previewScriptInput').value;
-    localStorage.setItem(PREVIEW_KEY, script);
+    const url = document.getElementById('previewUrlInput').value.trim();
+    const fullScript = document.getElementById('previewScriptInput').value.trim();
 
-    // Use the freshly-generated theme CSS. Defensively re-run generator in case it's stale.
+    // Decide which input drives the embed: explicit script wins, else build from URL
+    let scriptHtml;
+    if (fullScript) {
+      scriptHtml = fullScript;
+      localStorage.setItem(PREVIEW_KEY, fullScript);
+      localStorage.removeItem(PREVIEW_URL_KEY);
+    } else if (url) {
+      const safeUrl = url.replace(/"/g, '&quot;');
+      scriptHtml =
+        `<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"><\/script>\n` +
+        `<script>initWebchat("${safeUrl}");<\/script>`;
+      localStorage.setItem(PREVIEW_URL_KEY, url);
+      localStorage.removeItem(PREVIEW_KEY);
+    } else {
+      document.getElementById('previewFrame').srcdoc = '';
+      return;
+    }
+
     generateSnippet();
     const themeCss = document.getElementById('snippetOutput').textContent;
     const safeThemeCss = themeCss.replace(/<\/style>/gi, '<\\/style>');
@@ -3388,15 +3550,71 @@
 <head>
   <meta charset="utf-8">
   <style>
-    body { margin: 0; font-family: system-ui, sans-serif; min-height: 100vh; background: #fff;
-           display: flex; align-items: center; justify-content: center; color: #888; }
-    .placeholder { text-align: center; max-width: 320px; padding: 24px; line-height: 1.5; font-size: 14px; }
+    /* Mock "host site" inside the iframe so the Cognigy widget overlays on a realistic
+       page background rather than floating on an empty canvas. The widget positions
+       itself absolutely at bottom-right of the iframe viewport, which is exactly how
+       it would behave on a real site. */
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f8f9fb 0%, #eef0f4 100%);
+      color: #1f2937;
+    }
+    .demo-site {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 64px 32px;
+    }
+    .demo-site header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .demo-site header .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+    }
+    .demo-site h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #111827;
+      letter-spacing: -0.02em;
+      margin: 0 0 12px;
+    }
+    .demo-site p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #4b5563;
+      margin: 0 0 16px;
+    }
+    .demo-site .hint {
+      margin-top: 40px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
   </style>
   <style id="user-theme">${safeThemeCss}</style>
 </head>
 <body>
-  <div class="placeholder">Cognigy widget will appear here once your scripts run. Your theme CSS is already injected.</div>
-  ${script}
+  <div class="demo-site">
+    <header>
+      <span class="dot"></span>
+      <span>your-website.com</span>
+    </header>
+    <h1>Live preview of your themed Cognigy widget</h1>
+    <p>This page simulates what visitors will see on your site once the widget is embedded. The chat toggle button typically sits in the bottom-right corner; click it to open the widget and see your theme in action.</p>
+    <p>Your generated CSS has been injected into this preview, so the widget should look exactly how it would on your site.</p>
+    <div class="hint">Tip: switch themes or tweak controls in the main builder, then re-launch this preview to see your changes apply.</div>
+  </div>
+  ${scriptHtml}
 </body>
 </html>`;
 
@@ -3404,8 +3622,10 @@
   }
 
   function clearPreview() {
-    if (!confirm('Clear the saved Cognigy script?')) return;
+    if (!confirm('Clear the saved Cognigy preview settings?')) return;
+    document.getElementById('previewUrlInput').value = '';
     document.getElementById('previewScriptInput').value = '';
+    localStorage.removeItem(PREVIEW_URL_KEY);
     localStorage.removeItem(PREVIEW_KEY);
     document.getElementById('previewFrame').srcdoc = '';
   }
