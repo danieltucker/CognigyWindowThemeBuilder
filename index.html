@@ -1861,6 +1861,7 @@
 
         <div class="preview-actions">
           <button class="action-btn primary" id="previewLaunchInner" type="button">Launch</button>
+          <button class="action-btn" id="previewDownload" type="button" title="Save the live preview page as a self-contained HTML file with theme CSS baked in">Download</button>
           <button class="action-btn" id="previewClear" type="button">Clear</button>
         </div>
       </div>
@@ -3769,6 +3770,7 @@
     document.getElementById('previewLaunchBtn').addEventListener('click', openPreview);
     document.getElementById('previewModalClose').addEventListener('click', closePreview);
     document.getElementById('previewLaunchInner').addEventListener('click', launchPreview);
+    document.getElementById('previewDownload').addEventListener('click', downloadPreview);
     document.getElementById('previewClear').addEventListener('click', clearPreview);
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !document.getElementById('previewModal').hidden) closePreview();
@@ -3841,33 +3843,44 @@
     document.getElementById('previewFrame').srcdoc = '';
   }
 
-  function launchPreview() {
+  // Build the standalone preview HTML and (optionally) persist the input that produced it.
+  // Returns null if the user hasn't supplied a URL or full embed script.
+  // Used by both launchPreview (sets srcdoc) and downloadPreview (writes a file).
+  function buildPreviewHtml({ persist = false } = {}) {
     const url = document.getElementById('previewUrlInput').value.trim();
     const fullScript = document.getElementById('previewScriptInput').value.trim();
 
-    // Decide which input drives the embed: explicit script wins, else build from URL
     let scriptHtml;
     if (fullScript) {
       scriptHtml = fullScript;
-      localStorage.setItem(PREVIEW_KEY, fullScript);
-      localStorage.removeItem(PREVIEW_URL_KEY);
+      if (persist) {
+        localStorage.setItem(PREVIEW_KEY, fullScript);
+        localStorage.removeItem(PREVIEW_URL_KEY);
+      }
     } else if (url) {
       const safeUrl = url.replace(/"/g, '&quot;');
       scriptHtml =
         `<script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"><\/script>\n` +
         `<script>initWebchat("${safeUrl}");<\/script>`;
-      localStorage.setItem(PREVIEW_URL_KEY, url);
-      localStorage.removeItem(PREVIEW_KEY);
+      if (persist) {
+        localStorage.setItem(PREVIEW_URL_KEY, url);
+        localStorage.removeItem(PREVIEW_KEY);
+      }
     } else {
-      document.getElementById('previewFrame').srcdoc = '';
-      return;
+      return null;
     }
 
+    // Force-regenerate against current state in case the user is on the JSON tab —
+    // we always need CSS for the embed, regardless of which Export tab is active.
+    const previousFormat = state.exportFormat;
+    state.exportFormat = 'css';
     generateSnippet();
     const themeCss = document.getElementById('snippetOutput').textContent;
+    state.exportFormat = previousFormat;
+    if (previousFormat !== 'css') generateSnippet();
     const safeThemeCss = themeCss.replace(/<\/style>/gi, '<\\/style>');
 
-    const html = `<!doctype html>
+    return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -3939,8 +3952,41 @@
   ${scriptHtml}
 </body>
 </html>`;
+  }
 
+  function launchPreview() {
+    const html = buildPreviewHtml({ persist: true });
+    if (html === null) {
+      document.getElementById('previewFrame').srcdoc = '';
+      return;
+    }
     document.getElementById('previewFrame').srcdoc = html;
+  }
+
+  function downloadPreview() {
+    const html = buildPreviewHtml({ persist: true });
+    if (html === null) {
+      alert('Enter your endpoint URL (or paste a full embed script) before downloading.');
+      return;
+    }
+    // Filename hint based on the active preset name. Custom theme IDs (UUIDs) won't look
+    // useful here, so fall back to a plain default in that case.
+    const preset = state.activePreset || '';
+    const isBuiltIn = /^[a-z]+$/.test(preset);
+    const slug = isBuiltIn ? preset : 'theme';
+    const filename = `cognigy-preview-${slug}.html`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Defer revoke so Safari has time to read the blob.
+    setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+    showToast(`Downloaded ${filename}`);
   }
 
   function clearPreview() {
