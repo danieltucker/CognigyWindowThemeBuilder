@@ -23,7 +23,8 @@
     --chat-bg: #FFFFFF;
     --chat-header-bg: #1C1B18;
     --chat-header-text: #FFFFFF;
-    --chat-header-sub: rgba(255,255,255,0.55);
+    /* Subtitle auto-tracks header text — fades to 55% so it stays readable on any header bg */
+    --chat-header-sub: color-mix(in srgb, var(--chat-header-text) 55%, transparent);
 
     --bot-bubble-bg: #F4F2EE;
     --bot-bubble-text: #1C1B18;
@@ -81,7 +82,7 @@
     --chat-bg: #1C1B18;
     --chat-header-bg: #111110;
     --chat-header-text: #EAE8E3;
-    --chat-header-sub: rgba(234,232,227,0.45);
+    /* --chat-header-sub inherits from :root (auto-derived from --chat-header-text) */
 
     --bot-bubble-bg: #262522;
     --bot-bubble-text: #EAE8E3;
@@ -396,6 +397,103 @@
     background: transparent;
     cursor: pointer;
     padding: 2px;
+  }
+
+  .control-row input[type="color"]:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* Gradient controls (used on chatHeaderBg / botBubbleBg / userBubbleBg) */
+  .control-row.gradient-row {
+    grid-template-columns: 1fr auto auto auto;
+  }
+
+  .gradient-toggle {
+    font-family: var(--font-main);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--separator-color);
+    background: transparent;
+    color: var(--page-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    transition: color var(--transition), background var(--transition), border-color var(--transition);
+  }
+
+  .gradient-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .gradient-toggle.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .gradient-detail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    margin-left: 12px;
+    margin-top: -4px;
+    border-left: 2px solid var(--separator-color);
+    flex-wrap: wrap;
+  }
+
+  .gradient-detail input[type="color"] {
+    width: 32px;
+    height: 24px;
+    border: 1px solid var(--separator-color);
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+  }
+
+  .gradient-detail .gradient-arrow {
+    font-size: 11px;
+    color: var(--page-text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .gradient-dirs {
+    display: flex;
+    gap: 3px;
+    margin-left: auto;
+  }
+
+  .gradient-dirs button {
+    width: 26px;
+    height: 24px;
+    border-radius: 5px;
+    border: 1px solid var(--separator-color);
+    background: var(--page-bg);
+    color: var(--page-text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+
+  .gradient-dirs button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .gradient-dirs button.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
   }
 
   .control-row input[type="range"] {
@@ -1118,6 +1216,10 @@
         <button class="preset-chip" data-preset="minimal">Minimal</button>
         <button class="preset-chip" data-preset="playful">Playful</button>
         <button class="preset-chip" data-preset="tech">Tech</button>
+        <button class="preset-chip" data-preset="sunset">Sunset</button>
+        <button class="preset-chip" data-preset="aurora">Aurora</button>
+        <button class="preset-chip" data-preset="ocean">Ocean</button>
+        <button class="preset-chip" data-preset="carbon">Carbon</button>
       </div>
     </div>
 
@@ -1294,6 +1396,20 @@
   const SEL_ROOT   = '[data-cognigy-webchat-root] [data-cognigy-webchat].webchat';
   const SEL_TOGGLE = '[data-cognigy-webchat-root] [data-cognigy-webchat-toggle]';
 
+  // Gradient direction → CSS string
+  const GRAD_DIR_CSS = {
+    down: 'to bottom',
+    right: 'to right',
+    diag: 'to bottom right',
+  };
+  const GRAD_DIR_LABEL = { down: '↓', right: '→', diag: '↘', radial: '◉' };
+
+  function gradientCSS(g) {
+    if (!g) return '';
+    if (g.dir === 'radial') return `radial-gradient(circle at top left, ${g.from}, ${g.to})`;
+    return `linear-gradient(${GRAD_DIR_CSS[g.dir] || 'to bottom right'}, ${g.from}, ${g.to})`;
+  }
+
   const TOKEN_DEFS = {
     // ---- Colors ----
     accent: {
@@ -1321,9 +1437,9 @@
       ],
     },
     chatHeaderBg: {
-      label: 'Header background', type: 'color', group: 'Colors',
-      cssVar: '--chat-header-bg',
-      snippet: [{ sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'background-color' }],
+      label: 'Header background', type: 'colorWithGradient', group: 'Colors',
+      cssVar: '--chat-header-bg', gradKey: 'chatHeaderGradient',
+      snippet: [{ sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'background' }],
     },
     chatHeaderText: {
       label: 'Header text', type: 'color', group: 'Colors',
@@ -1334,9 +1450,9 @@
       ],
     },
     botBubbleBg: {
-      label: 'Bot bubble', type: 'color', group: 'Colors',
-      cssVar: '--bot-bubble-bg',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'background-color' }],
+      label: 'Bot bubble', type: 'colorWithGradient', group: 'Colors',
+      cssVar: '--bot-bubble-bg', gradKey: 'botBubbleGradient',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'background' }],
     },
     botBubbleText: {
       label: 'Bot bubble text', type: 'color', group: 'Colors',
@@ -1344,9 +1460,9 @@
       snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
     },
     userBubbleBg: {
-      label: 'User bubble', type: 'color', group: 'Colors',
-      cssVar: '--user-bubble-bg',
-      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'background-color' }],
+      label: 'User bubble', type: 'colorWithGradient', group: 'Colors',
+      cssVar: '--user-bubble-bg', gradKey: 'userBubbleGradient',
+      snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'background' }],
     },
     userBubbleText: {
       label: 'User bubble text', type: 'color', group: 'Colors',
@@ -1464,14 +1580,21 @@
   /* =========================================
      PRESETS
      ========================================= */
+  // Default gradient state: disabled, with sensible from/to so users can flip it on without re-picking
+  const G_OFF = (from, to, dir) => ({ enabled: false, from, to, dir: dir || 'diag' });
+  const G_ON  = (from, to, dir) => ({ enabled: true,  from, to, dir: dir || 'diag' });
+
   const PRESETS = {
     modern: {
       name: 'Modern',
       day: {
         accent: '#D4622A', pageBg: '#F0EDE8', chatBg: '#FFFFFF',
         chatHeaderBg: '#1C1B18', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#1C1B18', '#3A3835', 'diag'),
         botBubbleBg: '#F4F2EE', botBubbleText: '#1C1B18',
+        botBubbleGradient: G_OFF('#F4F2EE', '#E5E2DC', 'down'),
         userBubbleBg: '#1C1B18', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#1C1B18', '#D4622A', 'diag'),
         inputBg: '#FAFAF8', inputText: '#1C1B18',
         badgeBg: '#D4622A', toggleBg: '#1C1B18',
         fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
@@ -1482,8 +1605,11 @@
       night: {
         accent: '#F07A47', pageBg: '#111110', chatBg: '#1C1B18',
         chatHeaderBg: '#111110', chatHeaderText: '#EAE8E3',
+        chatHeaderGradient: G_OFF('#111110', '#262522', 'diag'),
         botBubbleBg: '#262522', botBubbleText: '#EAE8E3',
+        botBubbleGradient: G_OFF('#262522', '#333230', 'down'),
         userBubbleBg: '#D4622A', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#D4622A', '#F07A47', 'diag'),
         inputBg: '#262522', inputText: '#EAE8E3',
         badgeBg: '#F07A47', toggleBg: '#D4622A',
         fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
@@ -1497,8 +1623,11 @@
       day: {
         accent: '#1C1C1C', pageBg: '#FAFAFA', chatBg: '#FFFFFF',
         chatHeaderBg: '#FFFFFF', chatHeaderText: '#1C1C1C',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#F4F4F4', 'down'),
         botBubbleBg: '#F4F4F4', botBubbleText: '#1C1C1C',
+        botBubbleGradient: G_OFF('#F4F4F4', '#E8E8E8', 'down'),
         userBubbleBg: '#1C1C1C', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#1C1C1C', '#3A3A3A', 'down'),
         inputBg: '#F8F8F8', inputText: '#1C1C1C',
         badgeBg: '#1C1C1C', toggleBg: '#1C1C1C',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
@@ -1509,8 +1638,11 @@
       night: {
         accent: '#F0F0F0', pageBg: '#0A0A0A', chatBg: '#141414',
         chatHeaderBg: '#141414', chatHeaderText: '#F0F0F0',
+        chatHeaderGradient: G_OFF('#141414', '#1F1F1F', 'down'),
         botBubbleBg: '#1F1F1F', botBubbleText: '#F0F0F0',
+        botBubbleGradient: G_OFF('#1F1F1F', '#2A2A2A', 'down'),
         userBubbleBg: '#3A3A3A', userBubbleText: '#F0F0F0',
+        userBubbleGradient: G_OFF('#3A3A3A', '#5A5A5A', 'down'),
         inputBg: '#1F1F1F', inputText: '#F0F0F0',
         badgeBg: '#F0F0F0', toggleBg: '#3A3A3A',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
@@ -1524,8 +1656,11 @@
       day: {
         accent: '#7C3AED', pageBg: '#FFF7FB', chatBg: '#FFFFFF',
         chatHeaderBg: '#7C3AED', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#7C3AED', '#EC4899', 'right'),
         botBubbleBg: '#F3E8FF', botBubbleText: '#3A1F5A',
+        botBubbleGradient: G_OFF('#F3E8FF', '#FFE4F1', 'right'),
         userBubbleBg: '#7C3AED', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#7C3AED', '#EC4899', 'right'),
         inputBg: '#FFF0F5', inputText: '#3A1F5A',
         badgeBg: '#EC4899', toggleBg: '#7C3AED',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
@@ -1536,8 +1671,11 @@
       night: {
         accent: '#A78BFA', pageBg: '#1A0B2E', chatBg: '#251A3E',
         chatHeaderBg: '#3A1F5A', chatHeaderText: '#F3E8FF',
+        chatHeaderGradient: G_OFF('#3A1F5A', '#5E2A6E', 'right'),
         botBubbleBg: '#3A2F50', botBubbleText: '#F3E8FF',
+        botBubbleGradient: G_OFF('#3A2F50', '#4A3A60', 'right'),
         userBubbleBg: '#A78BFA', userBubbleText: '#1A0B2E',
+        userBubbleGradient: G_OFF('#A78BFA', '#F472B6', 'right'),
         inputBg: '#3A2F50', inputText: '#F3E8FF',
         badgeBg: '#F472B6', toggleBg: '#A78BFA',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
@@ -1551,8 +1689,11 @@
       day: {
         accent: '#10B981', pageBg: '#F8FAFC', chatBg: '#FFFFFF',
         chatHeaderBg: '#0F172A', chatHeaderText: '#F8FAFC',
+        chatHeaderGradient: G_OFF('#0F172A', '#1E293B', 'down'),
         botBubbleBg: '#F1F5F9', botBubbleText: '#0F172A',
+        botBubbleGradient: G_OFF('#F1F5F9', '#E2E8F0', 'down'),
         userBubbleBg: '#10B981', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
         inputBg: '#F8FAFC', inputText: '#0F172A',
         badgeBg: '#10B981', toggleBg: '#0F172A',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
@@ -1563,14 +1704,149 @@
       night: {
         accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
         chatHeaderBg: '#020617', chatHeaderText: '#F1F5F9',
+        chatHeaderGradient: G_OFF('#020617', '#0F172A', 'down'),
         botBubbleBg: '#1E293B', botBubbleText: '#F1F5F9',
+        botBubbleGradient: G_OFF('#1E293B', '#334155', 'down'),
         userBubbleBg: '#10B981', userBubbleText: '#020617',
+        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
         inputBg: '#1E293B', inputText: '#F1F5F9',
         badgeBg: '#34D399', toggleBg: '#34D399',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+      },
+    },
+    sunset: {
+      name: 'Sunset',
+      day: {
+        accent: '#E84A8A', pageBg: '#FFF8F1', chatBg: '#FFF8F1',
+        chatHeaderBg: '#FF6E5F', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_ON('#FFA751', '#B43AAB', 'diag'),
+        botBubbleBg: '#FFEEDD', botBubbleText: '#5C2A1A',
+        botBubbleGradient: G_OFF('#FFD3B6', '#FFEEDD', 'diag'),
+        userBubbleBg: '#E84A8A', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#FF6E5F', '#E84A8A', 'right'),
+        inputBg: '#FFEEDD', inputText: '#5C2A1A',
+        badgeBg: '#E84A8A', toggleBg: '#B43AAB',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 12px 60px rgba(180,58,171,0.20), 0 4px 16px rgba(232,74,138,0.12)',
+      },
+      night: {
+        accent: '#FF6E5F', pageBg: '#1F0F1A', chatBg: '#1F0F1A',
+        chatHeaderBg: '#4A1B5C', chatHeaderText: '#FFEEDD',
+        chatHeaderGradient: G_ON('#4A1B5C', '#C42E7E', 'diag'),
+        botBubbleBg: '#2E1D2C', botBubbleText: '#FFEEDD',
+        botBubbleGradient: G_OFF('#3A2434', '#2E1D2C', 'diag'),
+        userBubbleBg: '#E84A8A', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#FF6E5F', '#C42E7E', 'right'),
+        inputBg: '#2E1D2C', inputText: '#FFEEDD',
+        badgeBg: '#E84A8A', toggleBg: '#B43AAB',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 12px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)',
+      },
+    },
+    aurora: {
+      name: 'Aurora',
+      day: {
+        accent: '#5865F2', pageBg: '#F2F3F5', chatBg: '#FFFFFF',
+        chatHeaderBg: '#5865F2', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        botBubbleBg: '#F2F3F5', botBubbleText: '#2E3338',
+        botBubbleGradient: G_OFF('#F2F3F5', '#E3E5E8', 'down'),
+        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        inputBg: '#EBEDEF', inputText: '#2E3338',
+        badgeBg: '#ED4245', toggleBg: '#5865F2',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(88,101,242,0.15), 0 2px 8px rgba(0,0,0,0.06)',
+      },
+      night: {
+        accent: '#5865F2', pageBg: '#1E1F22', chatBg: '#2B2D31',
+        chatHeaderBg: '#1E1F22', chatHeaderText: '#DCDDDE',
+        chatHeaderGradient: G_OFF('#1E1F22', '#2B2D31', 'down'),
+        botBubbleBg: '#313338', botBubbleText: '#DCDDDE',
+        botBubbleGradient: G_OFF('#313338', '#2B2D31', 'down'),
+        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        inputBg: '#383A40', inputText: '#DCDDDE',
+        badgeBg: '#F23F42', toggleBg: '#5865F2',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+      },
+    },
+    ocean: {
+      name: 'Ocean',
+      day: {
+        accent: '#1D9BF0', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#0F1419',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#EFF3F4', 'down'),
+        botBubbleBg: '#EFF3F4', botBubbleText: '#0F1419',
+        botBubbleGradient: G_OFF('#EFF3F4', '#E1E8ED', 'down'),
+        userBubbleBg: '#1D9BF0', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#1D9BF0', '#1A8CD8', 'down'),
+        inputBg: '#EFF3F4', inputText: '#0F1419',
+        badgeBg: '#1D9BF0', toggleBg: '#1D9BF0',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(15,20,25,0.10), 0 2px 8px rgba(15,20,25,0.06)',
+      },
+      night: {
+        accent: '#1D9BF0', pageBg: '#000000', chatBg: '#000000',
+        chatHeaderBg: '#000000', chatHeaderText: '#E7E9EA',
+        chatHeaderGradient: G_OFF('#000000', '#16181C', 'down'),
+        botBubbleBg: '#16181C', botBubbleText: '#E7E9EA',
+        botBubbleGradient: G_OFF('#16181C', '#1F2227', 'down'),
+        userBubbleBg: '#1D9BF0', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#1D9BF0', '#1A8CD8', 'down'),
+        inputBg: '#16181C', inputText: '#E7E9EA',
+        badgeBg: '#1D9BF0', toggleBg: '#1D9BF0',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 8px 40px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)',
+      },
+    },
+    carbon: {
+      name: 'Carbon',
+      day: {
+        accent: '#C5F84A', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
+        chatHeaderBg: '#000000', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#000000', '#1A1A1A', 'down'),
+        botBubbleBg: '#F6F6F6', botBubbleText: '#000000',
+        botBubbleGradient: G_OFF('#F6F6F6', '#EDEDED', 'down'),
+        userBubbleBg: '#000000', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#000000', '#1A1A1A', 'down'),
+        inputBg: '#F6F6F6', inputText: '#000000',
+        badgeBg: '#C5F84A', toggleBg: '#000000',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 4, radiusBubble: 4, radiusInput: 4, radiusToggle: 4,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: 'none',
+      },
+      night: {
+        accent: '#C5F84A', pageBg: '#000000', chatBg: '#0A0A0A',
+        chatHeaderBg: '#000000', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#000000', '#0A0A0A', 'down'),
+        botBubbleBg: '#1A1A1A', botBubbleText: '#FFFFFF',
+        botBubbleGradient: G_OFF('#1A1A1A', '#222222', 'down'),
+        userBubbleBg: '#C5F84A', userBubbleText: '#000000',
+        userBubbleGradient: G_OFF('#C5F84A', '#A5D830', 'down'),
+        inputBg: '#1A1A1A', inputText: '#FFFFFF',
+        badgeBg: '#C5F84A', toggleBg: '#C5F84A',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 4, radiusBubble: 4, radiusInput: 4, radiusToggle: 4,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: 'none',
       },
     },
   };
@@ -1615,20 +1891,27 @@
   /* =========================================
      APPLY TOKENS TO PREVIEW
      ========================================= */
-  function formatVar(key, value) {
+  function formatVar(key, value, tokenValues) {
     const def = TOKEN_DEFS[key];
-    if (!def) return '';
+    if (!def) return ''; // skips gradient sibling keys etc.
+
+    if (def.type === 'colorWithGradient') {
+      const grad = tokenValues[def.gradKey];
+      const out = (grad && grad.enabled) ? gradientCSS(grad) : value;
+      return `  ${def.cssVar}: ${out};`;
+    }
+
     const unit = (def.unit && (def.type === 'slider' || def.type === 'number')) ? def.unit : '';
     return `  ${def.cssVar}: ${value}${unit};`;
   }
 
   function applyTokens() {
     const dayLines = Object.entries(state.day)
-      .map(([k, v]) => formatVar(k, v))
+      .map(([k, v]) => formatVar(k, v, state.day))
       .filter(Boolean)
       .join('\n');
     const nightLines = Object.entries(state.night)
-      .map(([k, v]) => formatVar(k, v))
+      .map(([k, v]) => formatVar(k, v, state.night))
       .filter(Boolean)
       .join('\n');
 
@@ -1655,7 +1938,14 @@
       if (!def.snippet || def.previewOnly) continue;
       const value = tokenValues[key];
       if (value == null || value === '') continue;
-      const finalValue = valueWithUnit(key, value);
+
+      let finalValue;
+      if (def.type === 'colorWithGradient') {
+        const grad = tokenValues[def.gradKey];
+        finalValue = (grad && grad.enabled) ? gradientCSS(grad) : value;
+      } else {
+        finalValue = valueWithUnit(key, value);
+      }
 
       for (const target of def.snippet) {
         if (!bySelector.has(target.sel)) bySelector.set(target.sel, []);
@@ -1724,9 +2014,28 @@
     container.style.gap = '14px';
     container.innerHTML = html;
 
-    // Wire change events
+    // Wire change events for solid-color / slider / number / select tokens
     container.querySelectorAll('[data-token]').forEach(input => {
       input.addEventListener('input', handleTokenChange);
+    });
+
+    // Wire gradient toggle (button click) + from/to (input event) + direction (button click)
+    container.querySelectorAll('[data-grad-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.gradToggle;
+        const grad = state[state.editingMode][target];
+        if (!grad) return;
+        handleGradientFieldChange(target, 'enabled', !grad.enabled);
+      });
+    });
+    container.querySelectorAll('[data-grad-target]').forEach(el => {
+      const target = el.dataset.gradTarget;
+      const field = el.dataset.gradField;
+      if (field === 'dir') {
+        el.addEventListener('click', () => handleGradientFieldChange(target, 'dir', el.dataset.gradValue));
+      } else {
+        el.addEventListener('input', () => handleGradientFieldChange(target, field, el.value));
+      }
     });
   }
 
@@ -1739,6 +2048,31 @@
             <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(value)}">
             <span class="value-display" data-display="${key}">${escapeAttr(value)}</span>
           </div>`;
+      case 'colorWithGradient': {
+        const grad = state[state.editingMode][def.gradKey] || { enabled: false, from: '#000000', to: '#FFFFFF', dir: 'diag' };
+        const enabled = !!grad.enabled;
+        const display = enabled ? 'Gradient' : value;
+        let html = `
+          <div class="control-row gradient-row">
+            <label for="ctl-${key}">${def.label}</label>
+            <input id="ctl-${key}" type="color" data-token="${key}" value="${escapeAttr(value)}"${enabled ? ' disabled' : ''}>
+            <button class="gradient-toggle${enabled ? ' active' : ''}" data-grad-toggle="${def.gradKey}" type="button" title="Toggle gradient">${enabled ? '× Gradient' : '+ Gradient'}</button>
+            <span class="value-display" data-display="${key}">${escapeAttr(display)}</span>
+          </div>`;
+        if (enabled) {
+          const dirs = ['down','right','diag','radial'].map(d =>
+            `<button data-grad-target="${def.gradKey}" data-grad-field="dir" data-grad-value="${d}" class="${grad.dir === d ? 'active' : ''}" type="button" title="${d}">${GRAD_DIR_LABEL[d]}</button>`
+          ).join('');
+          html += `
+            <div class="gradient-detail" data-grad-detail="${def.gradKey}">
+              <input type="color" data-grad-target="${def.gradKey}" data-grad-field="from" value="${escapeAttr(grad.from)}" title="Start color">
+              <span class="gradient-arrow">→</span>
+              <input type="color" data-grad-target="${def.gradKey}" data-grad-field="to" value="${escapeAttr(grad.to)}" title="End color">
+              <div class="gradient-dirs">${dirs}</div>
+            </div>`;
+        }
+        return html;
+      }
       case 'slider':
         return `
           <div class="control-row">
@@ -1797,6 +2131,29 @@
     generateSnippet();
     saveState();
     updatePresetChips();
+  }
+
+  function handleGradientFieldChange(target, field, value) {
+    const grad = state[state.editingMode][target];
+    if (!grad) return;
+    if (field === 'enabled') grad.enabled = !!value;
+    else if (field === 'from' || field === 'to') grad[field] = value;
+    else if (field === 'dir') {
+      grad.dir = value;
+      // Update active state on direction chips without a full re-render
+      document.querySelectorAll(`[data-grad-target="${target}"][data-grad-field="dir"]`).forEach(b => {
+        b.classList.toggle('active', b.dataset.gradValue === value);
+      });
+    }
+
+    state.activePreset = null;
+    applyTokens();
+    generateSnippet();
+    saveState();
+    updatePresetChips();
+
+    // Toggling enabled changes which sub-elements exist — full re-render
+    if (field === 'enabled') renderControls();
   }
 
   /* =========================================
