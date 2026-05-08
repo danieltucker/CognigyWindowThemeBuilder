@@ -74,7 +74,7 @@
     --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
   }
 
-  [data-theme="night"] {
+  [data-theme="dark"] {
     --page-bg: #111110;
     --page-text: #EAE8E3;
     --page-text-muted: #7A7874;
@@ -340,6 +340,8 @@
     background: transparent;
     color: var(--page-text-muted);
     cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
     transition: background var(--transition), color var(--transition);
   }
 
@@ -373,6 +375,83 @@
     padding-bottom: 8px;
     margin-bottom: 4px;
     border-bottom: 1px solid var(--separator-color);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* "(applies to both modes)" caption shown on shared groups when dark mode is on */
+  .group-caption {
+    font-size: 9.5px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--page-text-muted);
+    text-transform: none;
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  /* "Add dark mode variant" toggle inside the Colors group */
+  .dark-mode-toggle-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px dashed var(--separator-color);
+  }
+
+  .dark-mode-toggle-row label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--page-text);
+    font-weight: 500;
+  }
+
+  .dark-mode-toggle-row input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--separator-color);
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition);
+    flex-shrink: 0;
+  }
+
+  .dark-mode-toggle-row input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform var(--transition);
+  }
+
+  .dark-mode-toggle-row input[type="checkbox"]:checked {
+    background: var(--accent);
+  }
+
+  .dark-mode-toggle-row input[type="checkbox"]:checked::after {
+    transform: translateX(16px);
+  }
+
+  .dark-mode-toggle-helper {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--page-text-muted);
+    font-weight: 400;
+    margin-left: 46px;
+    max-width: 320px;
   }
 
   .control-row {
@@ -753,8 +832,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: var(--chat-bg);
-    transition: background var(--transition);
+    background: transparent;
     scroll-behavior: smooth;
   }
 
@@ -963,10 +1041,10 @@
   /* .webchat-input */
   .webchat-input {
     flex-shrink: 0;
-    background: var(--chat-bg);
+    background: transparent;
     border-top: 1px solid var(--separator-color);
     padding: 12px 14px;
-    transition: background var(--transition), border-color var(--transition);
+    transition: border-color var(--transition);
   }
 
   /* .webchat-input-menu-form */
@@ -1185,8 +1263,8 @@
 </style>
 
 <!-- Token override style blocks (populated by JS) -->
-<style id="day-overrides"></style>
-<style id="night-overrides"></style>
+<style id="light-overrides"></style>
+<style id="dark-overrides"></style>
 </head>
 <body>
 
@@ -1220,6 +1298,7 @@
         <button class="preset-chip" data-preset="aurora">Aurora</button>
         <button class="preset-chip" data-preset="ocean">Ocean</button>
         <button class="preset-chip" data-preset="carbon">Carbon</button>
+        <button class="preset-chip" data-preset="halcyon">Halcyon</button>
       </div>
     </div>
 
@@ -1233,10 +1312,6 @@
     <div class="builder-section">
       <div class="section-title-row">
         <h2>Customize</h2>
-        <div class="segmented" id="editModeSegmented" role="tablist" aria-label="Editing mode">
-          <button data-mode="day" class="active" role="tab">☀️ Day</button>
-          <button data-mode="night" role="tab">🌙 Night</button>
-        </div>
       </div>
       <div id="controlsContainer"></div>
     </div>
@@ -1246,8 +1321,8 @@
       <div class="section-title-row">
         <h2>CSS Snippet</h2>
         <div class="segmented" id="outputSegmented" aria-label="Snippet output mode">
-          <button data-output="day">Day only</button>
-          <button data-output="night">Night only</button>
+          <button data-output="light">Light only</button>
+          <button data-output="dark">Dark only</button>
           <button data-output="both" class="active">Both</button>
         </div>
       </div>
@@ -1428,12 +1503,13 @@
       previewOnly: true, // Not emitted — page background is outside the widget
     },
     chatBg: {
-      label: 'Chat background', type: 'color', group: 'Colors',
-      cssVar: '--chat-bg',
+      label: 'Chat background', type: 'colorWithGradient', group: 'Colors',
+      cssVar: '--chat-bg', gradKey: 'chatBgGradient',
       snippet: [
-        { sel: SEL_ROOT, prop: 'background-color' },
-        { sel: `${SEL_ROOT} .webchat-chat-history`, prop: 'background-color' },
-        { sel: `${SEL_ROOT} .webchat-input`, prop: 'background-color' },
+        { sel: SEL_ROOT, prop: 'background' },
+        // Force chat history + input to transparent so the gradient on the outer container shows through
+        { sel: `${SEL_ROOT} .webchat-chat-history`, prop: 'background', literal: 'transparent' },
+        { sel: `${SEL_ROOT} .webchat-input`, prop: 'background', literal: 'transparent' },
       ],
     },
     chatHeaderBg: {
@@ -1587,8 +1663,9 @@
   const PRESETS = {
     modern: {
       name: 'Modern',
-      day: {
+      light: {
         accent: '#D4622A', pageBg: '#F0EDE8', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#FAF6F0', 'down'),
         chatHeaderBg: '#1C1B18', chatHeaderText: '#FFFFFF',
         chatHeaderGradient: G_OFF('#1C1B18', '#3A3835', 'diag'),
         botBubbleBg: '#F4F2EE', botBubbleText: '#1C1B18',
@@ -1602,8 +1679,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
       },
-      night: {
+      dark: {
         accent: '#F07A47', pageBg: '#111110', chatBg: '#1C1B18',
+        chatBgGradient: G_ON('#1C1B18', '#161513', 'down'),
         chatHeaderBg: '#111110', chatHeaderText: '#EAE8E3',
         chatHeaderGradient: G_OFF('#111110', '#262522', 'diag'),
         botBubbleBg: '#262522', botBubbleText: '#EAE8E3',
@@ -1620,8 +1698,9 @@
     },
     minimal: {
       name: 'Minimal',
-      day: {
+      light: {
         accent: '#1C1C1C', pageBg: '#FAFAFA', chatBg: '#FFFFFF',
+        chatBgGradient: G_OFF('#FFFFFF', '#FAFAFA', 'down'),
         chatHeaderBg: '#FFFFFF', chatHeaderText: '#1C1C1C',
         chatHeaderGradient: G_OFF('#FFFFFF', '#F4F4F4', 'down'),
         botBubbleBg: '#F4F4F4', botBubbleText: '#1C1C1C',
@@ -1635,8 +1714,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: 'none',
       },
-      night: {
+      dark: {
         accent: '#F0F0F0', pageBg: '#0A0A0A', chatBg: '#141414',
+        chatBgGradient: G_OFF('#141414', '#0A0A0A', 'down'),
         chatHeaderBg: '#141414', chatHeaderText: '#F0F0F0',
         chatHeaderGradient: G_OFF('#141414', '#1F1F1F', 'down'),
         botBubbleBg: '#1F1F1F', botBubbleText: '#F0F0F0',
@@ -1653,14 +1733,15 @@
     },
     playful: {
       name: 'Playful',
-      day: {
+      light: {
         accent: '#7C3AED', pageBg: '#FFF7FB', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#FCE9F4', 'diag'),
         chatHeaderBg: '#7C3AED', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#7C3AED', '#EC4899', 'right'),
+        chatHeaderGradient: G_ON('#7C3AED', '#EC4899', 'right'),
         botBubbleBg: '#F3E8FF', botBubbleText: '#3A1F5A',
         botBubbleGradient: G_OFF('#F3E8FF', '#FFE4F1', 'right'),
         userBubbleBg: '#7C3AED', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#7C3AED', '#EC4899', 'right'),
+        userBubbleGradient: G_ON('#7C3AED', '#EC4899', 'right'),
         inputBg: '#FFF0F5', inputText: '#3A1F5A',
         badgeBg: '#EC4899', toggleBg: '#7C3AED',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
@@ -1668,14 +1749,15 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 12px 60px rgba(124,58,237,0.25), 0 4px 16px rgba(124,58,237,0.12)',
       },
-      night: {
+      dark: {
         accent: '#A78BFA', pageBg: '#1A0B2E', chatBg: '#251A3E',
+        chatBgGradient: G_ON('#251A3E', '#3A1F5A', 'diag'),
         chatHeaderBg: '#3A1F5A', chatHeaderText: '#F3E8FF',
-        chatHeaderGradient: G_OFF('#3A1F5A', '#5E2A6E', 'right'),
+        chatHeaderGradient: G_ON('#3A1F5A', '#5E2A6E', 'right'),
         botBubbleBg: '#3A2F50', botBubbleText: '#F3E8FF',
         botBubbleGradient: G_OFF('#3A2F50', '#4A3A60', 'right'),
         userBubbleBg: '#A78BFA', userBubbleText: '#1A0B2E',
-        userBubbleGradient: G_OFF('#A78BFA', '#F472B6', 'right'),
+        userBubbleGradient: G_ON('#A78BFA', '#F472B6', 'right'),
         inputBg: '#3A2F50', inputText: '#F3E8FF',
         badgeBg: '#F472B6', toggleBg: '#A78BFA',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
@@ -1686,8 +1768,9 @@
     },
     tech: {
       name: 'Tech',
-      day: {
+      light: {
         accent: '#10B981', pageBg: '#F8FAFC', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F1F5F9', 'down'),
         chatHeaderBg: '#0F172A', chatHeaderText: '#F8FAFC',
         chatHeaderGradient: G_OFF('#0F172A', '#1E293B', 'down'),
         botBubbleBg: '#F1F5F9', botBubbleText: '#0F172A',
@@ -1701,8 +1784,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 8px 40px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06)',
       },
-      night: {
+      dark: {
         accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
+        chatBgGradient: G_ON('#0F172A', '#020617', 'down'),
         chatHeaderBg: '#020617', chatHeaderText: '#F1F5F9',
         chatHeaderGradient: G_OFF('#020617', '#0F172A', 'down'),
         botBubbleBg: '#1E293B', botBubbleText: '#F1F5F9',
@@ -1719,8 +1803,9 @@
     },
     sunset: {
       name: 'Sunset',
-      day: {
+      light: {
         accent: '#E84A8A', pageBg: '#FFF8F1', chatBg: '#FFF8F1',
+        chatBgGradient: G_ON('#FFF8F1', '#FFE9DD', 'diag'),
         chatHeaderBg: '#FF6E5F', chatHeaderText: '#FFFFFF',
         chatHeaderGradient: G_ON('#FFA751', '#B43AAB', 'diag'),
         botBubbleBg: '#FFEEDD', botBubbleText: '#5C2A1A',
@@ -1734,8 +1819,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 12px 60px rgba(180,58,171,0.20), 0 4px 16px rgba(232,74,138,0.12)',
       },
-      night: {
+      dark: {
         accent: '#FF6E5F', pageBg: '#1F0F1A', chatBg: '#1F0F1A',
+        chatBgGradient: G_ON('#1F0F1A', '#2E1D2C', 'diag'),
         chatHeaderBg: '#4A1B5C', chatHeaderText: '#FFEEDD',
         chatHeaderGradient: G_ON('#4A1B5C', '#C42E7E', 'diag'),
         botBubbleBg: '#2E1D2C', botBubbleText: '#FFEEDD',
@@ -1752,8 +1838,9 @@
     },
     aurora: {
       name: 'Aurora',
-      day: {
+      light: {
         accent: '#5865F2', pageBg: '#F2F3F5', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F2F3F5', 'down'),
         chatHeaderBg: '#5865F2', chatHeaderText: '#FFFFFF',
         chatHeaderGradient: G_OFF('#5865F2', '#7983F5', 'down'),
         botBubbleBg: '#F2F3F5', botBubbleText: '#2E3338',
@@ -1767,8 +1854,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 8px 40px rgba(88,101,242,0.15), 0 2px 8px rgba(0,0,0,0.06)',
       },
-      night: {
+      dark: {
         accent: '#5865F2', pageBg: '#1E1F22', chatBg: '#2B2D31',
+        chatBgGradient: G_ON('#2B2D31', '#1E1F22', 'down'),
         chatHeaderBg: '#1E1F22', chatHeaderText: '#DCDDDE',
         chatHeaderGradient: G_OFF('#1E1F22', '#2B2D31', 'down'),
         botBubbleBg: '#313338', botBubbleText: '#DCDDDE',
@@ -1785,8 +1873,9 @@
     },
     ocean: {
       name: 'Ocean',
-      day: {
+      light: {
         accent: '#1D9BF0', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#EFF3F4', 'down'),
         chatHeaderBg: '#FFFFFF', chatHeaderText: '#0F1419',
         chatHeaderGradient: G_OFF('#FFFFFF', '#EFF3F4', 'down'),
         botBubbleBg: '#EFF3F4', botBubbleText: '#0F1419',
@@ -1800,8 +1889,9 @@
         widgetWidth: 380, widgetHeight: 580,
         shadow: '0 8px 40px rgba(15,20,25,0.10), 0 2px 8px rgba(15,20,25,0.06)',
       },
-      night: {
+      dark: {
         accent: '#1D9BF0', pageBg: '#000000', chatBg: '#000000',
+        chatBgGradient: G_ON('#000000', '#0A0E13', 'down'),
         chatHeaderBg: '#000000', chatHeaderText: '#E7E9EA',
         chatHeaderGradient: G_OFF('#000000', '#16181C', 'down'),
         botBubbleBg: '#16181C', botBubbleText: '#E7E9EA',
@@ -1818,35 +1908,72 @@
     },
     carbon: {
       name: 'Carbon',
-      day: {
-        accent: '#C5F84A', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
-        chatHeaderBg: '#000000', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#000000', '#1A1A1A', 'down'),
-        botBubbleBg: '#F6F6F6', botBubbleText: '#000000',
-        botBubbleGradient: G_OFF('#F6F6F6', '#EDEDED', 'down'),
-        userBubbleBg: '#000000', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#000000', '#1A1A1A', 'down'),
-        inputBg: '#F6F6F6', inputText: '#000000',
-        badgeBg: '#C5F84A', toggleBg: '#000000',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 4, radiusBubble: 4, radiusInput: 4, radiusToggle: 4,
+      light: {
+        accent: '#D4B98A', pageBg: '#F5F1EA', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F5F1EA', 'down'),
+        chatHeaderBg: '#0B0B0C', chatHeaderText: '#F5F1EA',
+        chatHeaderGradient: G_ON('#0B0B0C', '#1A1612', 'down'),
+        botBubbleBg: '#F5F1EA', botBubbleText: '#0B0B0C',
+        botBubbleGradient: G_OFF('#F5F1EA', '#EDE6DA', 'down'),
+        userBubbleBg: '#0B0B0C', userBubbleText: '#D4B98A',
+        userBubbleGradient: G_ON('#0B0B0C', '#2A2520', 'diag'),
+        inputBg: '#F5F1EA', inputText: '#0B0B0C',
+        badgeBg: '#D4B98A', toggleBg: '#0B0B0C',
+        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
+        radiusChat: 4, radiusBubble: 6, radiusInput: 4, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: 'none',
+        shadow: '0 12px 50px rgba(11,11,12,0.18), 0 2px 6px rgba(11,11,12,0.10)',
       },
-      night: {
-        accent: '#C5F84A', pageBg: '#000000', chatBg: '#0A0A0A',
-        chatHeaderBg: '#000000', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#000000', '#0A0A0A', 'down'),
-        botBubbleBg: '#1A1A1A', botBubbleText: '#FFFFFF',
-        botBubbleGradient: G_OFF('#1A1A1A', '#222222', 'down'),
-        userBubbleBg: '#C5F84A', userBubbleText: '#000000',
-        userBubbleGradient: G_OFF('#C5F84A', '#A5D830', 'down'),
-        inputBg: '#1A1A1A', inputText: '#FFFFFF',
-        badgeBg: '#C5F84A', toggleBg: '#C5F84A',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 4, radiusBubble: 4, radiusInput: 4, radiusToggle: 4,
+      dark: {
+        accent: '#D4B98A', pageBg: '#000000', chatBg: '#0B0B0C',
+        chatBgGradient: G_ON('#0B0B0C', '#000000', 'down'),
+        chatHeaderBg: '#000000', chatHeaderText: '#F5F1EA',
+        chatHeaderGradient: G_ON('#000000', '#0B0B0C', 'down'),
+        botBubbleBg: '#1A1612', botBubbleText: '#F5F1EA',
+        botBubbleGradient: G_OFF('#1A1612', '#221C16', 'down'),
+        userBubbleBg: '#D4B98A', userBubbleText: '#0B0B0C',
+        userBubbleGradient: G_ON('#D4B98A', '#B89B66', 'diag'),
+        inputBg: '#1A1612', inputText: '#F5F1EA',
+        badgeBg: '#D4B98A', toggleBg: '#D4B98A',
+        fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
+        radiusChat: 4, radiusBubble: 6, radiusInput: 4, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: 'none',
+        shadow: '0 12px 50px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.3)',
+      },
+    },
+    halcyon: {
+      name: 'Halcyon',
+      light: {
+        accent: '#6B5BD1', pageBg: '#FAF7F2', chatBg: '#FFFAF5',
+        chatBgGradient: G_ON('#FFFAF5', '#F0E6F5', 'diag'),
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#2A2540',
+        chatHeaderGradient: G_ON('#FFFFFF', '#F5EDF7', 'down'),
+        botBubbleBg: '#FFFFFF', botBubbleText: '#2A2540',
+        botBubbleGradient: G_ON('#FFFFFF', '#FCF1F7', 'down'),
+        userBubbleBg: '#6B5BD1', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#6B5BD1', '#E2547B', 'diag'),
+        inputBg: '#FAF7F5', inputText: '#2A2540',
+        badgeBg: '#E2547B', toggleBg: '#6B5BD1',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 24, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 16px 60px rgba(107,91,209,0.18), 0 4px 16px rgba(226,84,123,0.10)',
+      },
+      dark: {
+        accent: '#A78BFA', pageBg: '#0A0712', chatBg: '#14102B',
+        chatBgGradient: G_ON('#14102B', '#2D1A3D', 'diag'),
+        chatHeaderBg: '#1F1735', chatHeaderText: '#F0E8FF',
+        chatHeaderGradient: G_ON('#1F1735', '#14102B', 'down'),
+        botBubbleBg: '#1F1735', botBubbleText: '#E8DFF7',
+        botBubbleGradient: G_ON('#1F1735', '#2A1F4A', 'down'),
+        userBubbleBg: '#6B5BD1', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#6B5BD1', '#E2547B', 'diag'),
+        inputBg: '#1F1735', inputText: '#F0E8FF',
+        badgeBg: '#FF6B9D', toggleBg: '#6B5BD1',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 24, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadow: '0 16px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(107,91,209,0.30)',
       },
     },
   };
@@ -1854,14 +1981,16 @@
   /* =========================================
      STATE + PERSISTENCE
      ========================================= */
-  const STORAGE_KEY = 'cognigy-theme-v1';
+  const STORAGE_KEY = 'cognigy-theme-v2';
+  const STORAGE_KEY_LEGACY = 'cognigy-theme-v1';
 
   const state = {
-    editingMode: 'day',           // 'day' | 'night'
-    outputMode: 'both',            // 'day' | 'night' | 'both'
+    editingMode: 'light',            // 'light' | 'dark'
+    outputMode: 'light',             // 'light' | 'dark' | 'both' — defaults to 'light' (no dark on first load)
     activePreset: 'modern',
-    day: { ...PRESETS.modern.day },
-    night: { ...PRESETS.modern.night },
+    includeDark: false,              // opt-in; true if user enabled dark mode editing
+    light: { ...PRESETS.modern.light },
+    dark:  { ...PRESETS.modern.dark },
   };
 
   function saveState() {
@@ -1869,22 +1998,46 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         outputMode: state.outputMode,
         activePreset: state.activePreset,
-        day: state.day,
-        night: state.night,
+        includeDark: state.includeDark,
+        light: state.light,
+        dark:  state.dark,
       }));
     } catch (e) { /* ignore quota errors */ }
   }
 
   function loadState() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      let raw = localStorage.getItem(STORAGE_KEY);
+      let isLegacy = false;
+      if (!raw) {
+        raw = localStorage.getItem(STORAGE_KEY_LEGACY);
+        if (raw) isLegacy = true;
+      }
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      // Merge over Modern defaults so older saves missing newly-added tokens still render
-      if (parsed.day) state.day = { ...PRESETS.modern.day, ...parsed.day };
-      if (parsed.night) state.night = { ...PRESETS.modern.night, ...parsed.night };
-      if (parsed.outputMode) state.outputMode = parsed.outputMode;
+
+      // v1 used day/night; v2 uses light/dark — accept either
+      const lightSrc = parsed.light || parsed.day;
+      const darkSrc  = parsed.dark  || parsed.night;
+      if (lightSrc) state.light = { ...PRESETS.modern.light, ...lightSrc };
+      if (darkSrc)  state.dark  = { ...PRESETS.modern.dark, ...darkSrc };
+
+      // includeDark: explicit value wins; else derive from presence of dark colors in legacy
+      if (typeof parsed.includeDark === 'boolean') {
+        state.includeDark = parsed.includeDark;
+      } else if (isLegacy && (parsed.day || parsed.night)) {
+        state.includeDark = true;
+      }
+
+      // outputMode: map legacy day/night to light/dark
+      if (parsed.outputMode) {
+        const map = { day: 'light', night: 'dark', both: 'both', light: 'light', dark: 'dark' };
+        state.outputMode = map[parsed.outputMode] || 'light';
+      }
       if (parsed.activePreset !== undefined) state.activePreset = parsed.activePreset;
+
+      // Snap outputMode to light if dark isn't included
+      if (!state.includeDark && state.outputMode !== 'light') state.outputMode = 'light';
     } catch (e) { /* ignore */ }
   }
 
@@ -1906,17 +2059,17 @@
   }
 
   function applyTokens() {
-    const dayLines = Object.entries(state.day)
-      .map(([k, v]) => formatVar(k, v, state.day))
+    const lightLines = Object.entries(state.light)
+      .map(([k, v]) => formatVar(k, v, state.light))
       .filter(Boolean)
       .join('\n');
-    const nightLines = Object.entries(state.night)
-      .map(([k, v]) => formatVar(k, v, state.night))
+    const darkLines = Object.entries(state.dark)
+      .map(([k, v]) => formatVar(k, v, state.dark))
       .filter(Boolean)
       .join('\n');
 
-    document.getElementById('day-overrides').textContent = `:root {\n${dayLines}\n}`;
-    document.getElementById('night-overrides').textContent = `[data-theme="night"] {\n${nightLines}\n}`;
+    document.getElementById('light-overrides').textContent = `:root {\n${lightLines}\n}`;
+    document.getElementById('dark-overrides').textContent = `[data-theme="dark"] {\n${darkLines}\n}`;
   }
 
   /* =========================================
@@ -1931,7 +2084,6 @@
   }
 
   function generateModeBlock(tokenValues) {
-    // Group props by selector to emit one rule per selector
     const bySelector = new Map();
 
     for (const [key, def] of Object.entries(TOKEN_DEFS)) {
@@ -1949,7 +2101,6 @@
 
       for (const target of def.snippet) {
         if (!bySelector.has(target.sel)) bySelector.set(target.sel, []);
-        // 'literal' overrides; 'transform' wraps the token value (e.g. color-mix for placeholder)
         let out;
         if (target.literal !== undefined) out = target.literal;
         else if (typeof target.transform === 'function') out = target.transform(finalValue);
@@ -1973,12 +2124,18 @@
 
   function generateSnippet() {
     const blocks = [];
-    if (state.outputMode === 'day' || state.outputMode === 'both') {
-      blocks.push(generateModeBlock(state.day));
-    }
-    if (state.outputMode === 'night' || state.outputMode === 'both') {
-      const nightInner = generateModeBlock(state.night);
-      blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(nightInner, 2)}\n}`);
+
+    // When dark mode isn't included, emit only light — no @media block, no dark rules.
+    if (!state.includeDark) {
+      blocks.push(generateModeBlock(state.light));
+    } else {
+      if (state.outputMode === 'light' || state.outputMode === 'both') {
+        blocks.push(generateModeBlock(state.light));
+      }
+      if (state.outputMode === 'dark' || state.outputMode === 'both') {
+        const darkInner = generateModeBlock(state.dark);
+        blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(darkInner, 2)}\n}`);
+      }
     }
     document.getElementById('snippetOutput').textContent = blocks.join('\n\n');
   }
@@ -1990,6 +2147,12 @@
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   }
 
+  // Tokens whose changes should mirror to BOTH light and dark (typography / shape / sizing / effect).
+  // Color tokens write only to the active mode.
+  function isSharedTokenType(t) {
+    return t !== 'color' && t !== 'colorWithGradient';
+  }
+
   function renderControls() {
     const groups = {};
     for (const [key, def] of Object.entries(TOKEN_DEFS)) {
@@ -1997,13 +2160,48 @@
     }
 
     const tokens = state[state.editingMode];
+    const includeDark = state.includeDark;
     let html = '';
+
     for (const [groupName, items] of Object.entries(groups)) {
       html += `<div class="control-group" style="margin-top: 4px;">`;
-      html += `<h3>${groupName}</h3>`;
+
+      // Group header
+      if (groupName === 'Colors') {
+        // h3 + segmented control on the right when dark mode is on
+        let segmented = '';
+        if (includeDark) {
+          segmented = `<div class="segmented" id="editModeSegmented" role="tablist" aria-label="Editing mode">` +
+            `<button data-mode="light" class="${state.editingMode === 'light' ? 'active' : ''}" type="button">☀ Light</button>` +
+            `<button data-mode="dark" class="${state.editingMode === 'dark' ? 'active' : ''}" type="button">🌙 Dark</button>` +
+            `</div>`;
+        }
+        html += `<h3><span>${groupName}</span>${segmented}</h3>`;
+      } else {
+        // Other groups: h3 + (applies to both modes) caption when dark on
+        const caption = includeDark ? `<span class="group-caption">applies to both modes</span>` : '';
+        html += `<h3><span>${groupName}</span>${caption}</h3>`;
+      }
+
+      // Colors group only: dark-mode toggle + helper text
+      if (groupName === 'Colors') {
+        const helperText = includeDark
+          ? "Editing two palettes — switch between them with the toggle on the right."
+          : "When on, you'll set two color palettes. Users with system-level dark mode will see the dark one automatically.";
+        html += `<div class="dark-mode-toggle-row">` +
+          `<label>` +
+            `<input type="checkbox" id="includeDarkToggle"${includeDark ? ' checked' : ''}>` +
+            `<span>Add dark mode variant</span>` +
+          `</label>` +
+          `<p class="dark-mode-toggle-helper">${helperText}</p>` +
+          `</div>`;
+      }
+
+      // Control rows
       for (const { key, def } of items) {
         html += renderControl(key, def, tokens[key]);
       }
+
       html += `</div>`;
     }
 
@@ -2037,6 +2235,19 @@
         el.addEventListener('input', () => handleGradientFieldChange(target, field, el.value));
       }
     });
+
+    // Wire dark-mode opt-in toggle (rendered inside the Colors group)
+    const dmToggle = container.querySelector('#includeDarkToggle');
+    if (dmToggle) dmToggle.addEventListener('change', () => setIncludeDark(dmToggle.checked));
+
+    // Wire Light/Dark editing segmented control (only present when dark mode is included)
+    const segmented = container.querySelector('#editModeSegmented');
+    if (segmented) {
+      segmented.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-mode]');
+        if (btn) setEditingMode(btn.dataset.mode);
+      });
+    }
   }
 
   function renderControl(key, def, value) {
@@ -2110,14 +2321,20 @@
     if (def.type === 'slider' || def.type === 'number') {
       value = Number(value);
       if (Number.isNaN(value)) return;
-      // Clamp number inputs (sliders already enforce)
       if (def.type === 'number') {
         if (value < def.min) value = def.min;
         if (value > def.max) value = def.max;
       }
     }
 
-    state[state.editingMode][key] = value;
+    // Color tokens write only to active mode; non-color tokens (typography/shape/sizing/effect)
+    // mirror to BOTH modes — by design, layout/typography is shared.
+    if (isSharedTokenType(def.type)) {
+      state.light[key] = value;
+      state.dark[key]  = value;
+    } else {
+      state[state.editingMode][key] = value;
+    }
     state.activePreset = null;
 
     // Update value display
@@ -2157,15 +2374,16 @@
   }
 
   /* =========================================
-     SEGMENTED CONTROLS
+     SEGMENTED CONTROLS + DARK-MODE OPT-IN
      ========================================= */
   function setEditingMode(mode) {
+    if (!state.includeDark && mode === 'dark') return; // defensive — UI shouldn't allow this
     state.editingMode = mode;
     document.querySelectorAll('#editModeSegmented button').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
-    if (mode === 'night') {
-      document.documentElement.setAttribute('data-theme', 'night');
+    if (mode === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
@@ -2181,17 +2399,51 @@
     saveState();
   }
 
+  function setIncludeDark(on) {
+    state.includeDark = !!on;
+    if (!state.includeDark) {
+      // Force back to light editing + light-only output when dark mode is removed
+      state.editingMode = 'light';
+      document.documentElement.removeAttribute('data-theme');
+      if (state.outputMode !== 'light') state.outputMode = 'light';
+    }
+    syncOutputSegmentedUI();
+    applyTokens();
+    generateSnippet();
+    saveState();
+    renderControls();
+  }
+
+  function syncOutputSegmentedUI() {
+    const seg = document.getElementById('outputSegmented');
+    if (!seg) return;
+    seg.style.display = state.includeDark ? '' : 'none';
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.output === state.outputMode);
+    });
+  }
+
   /* =========================================
      SAVED THEMES ("My Themes")
      ========================================= */
-  const SAVED_KEY = 'cognigy-themes-saved-v1';
+  const SAVED_KEY = 'cognigy-themes-saved-v2';
+  const SAVED_KEY_LEGACY = 'cognigy-themes-saved-v1';
 
   function loadSavedThemes() {
     try {
-      const raw = localStorage.getItem(SAVED_KEY);
+      let raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) raw = localStorage.getItem(SAVED_KEY_LEGACY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      // Migrate v1 day/night → v2 light/dark on read
+      return parsed.map(t => ({
+        id: t.id,
+        name: t.name,
+        light: t.light || t.day || {},
+        dark:  t.dark  || t.night || {},
+        savedAt: t.savedAt,
+      }));
     } catch (e) { return []; }
   }
 
@@ -2231,8 +2483,8 @@
 
     themes.push({
       id, name: finalName,
-      day: { ...state.day },
-      night: { ...state.night },
+      light: { ...state.light },
+      dark:  { ...state.dark },
       savedAt: new Date().toISOString(),
     });
     persistSavedThemes(themes);
@@ -2262,12 +2514,17 @@
     const theme = themes.find(t => t.id === id);
     if (!theme) return;
     // Merge over Modern defaults so saved themes that predate new tokens still work
-    state.day = { ...PRESETS.modern.day, ...theme.day };
-    state.night = { ...PRESETS.modern.night, ...theme.night };
+    state.light = { ...PRESETS.modern.light, ...theme.light };
+    state.dark  = { ...PRESETS.modern.dark,  ...theme.dark };
+    // If the saved theme has any dark colors set, surface them by enabling dark mode
+    if (theme.dark && Object.keys(theme.dark).length > 0) {
+      state.includeDark = true;
+    }
     state.activePreset = id;
     applyTokens();
     renderControls();
     generateSnippet();
+    syncOutputSegmentedUI();
     saveState();
     updatePresetChips();
   }
@@ -2293,9 +2550,11 @@
   function applyPreset(name) {
     const preset = PRESETS[name];
     if (!preset) return;
-    // Merge over Modern defaults so any newly-added tokens are populated
-    state.day = { ...PRESETS.modern.day, ...preset.day };
-    state.night = { ...PRESETS.modern.night, ...preset.night };
+    // Merge over Modern defaults so any newly-added tokens are populated.
+    // Don't change includeDark — preset's dark palette gets loaded into state.dark either way,
+    // and surfaces in the UI only when the user opts in.
+    state.light = { ...PRESETS.modern.light, ...preset.light };
+    state.dark  = { ...PRESETS.modern.dark,  ...preset.dark };
     state.activePreset = name;
     applyTokens();
     renderControls();
@@ -2346,10 +2605,11 @@
   function resetTheme() {
     if (!confirm('Reset to the Modern preset? Your customizations will be lost.')) return;
     localStorage.removeItem(STORAGE_KEY);
-    state.outputMode = 'both';
-    document.querySelectorAll('#outputSegmented button').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.output === 'both');
-    });
+    state.outputMode = 'light';
+    state.includeDark = false;
+    state.editingMode = 'light';
+    document.documentElement.removeAttribute('data-theme');
+    syncOutputSegmentedUI();
     applyPreset('modern');
   }
 
@@ -2413,13 +2673,10 @@
   function init() {
     loadState();
 
-    // In-panel editing mode segmented control (sole Day/Night switch)
-    document.getElementById('editModeSegmented').addEventListener('click', e => {
-      const btn = e.target.closest('button[data-mode]');
-      if (btn) setEditingMode(btn.dataset.mode);
-    });
+    // The Light/Dark editing-mode segmented control lives inside the Colors group
+    // and is wired by renderControls (it only exists when dark mode is included).
 
-    // Output mode segmented control
+    // Output mode segmented control (visibility is controlled by syncOutputSegmentedUI)
     document.getElementById('outputSegmented').addEventListener('click', e => {
       const btn = e.target.closest('button[data-output]');
       if (btn) setOutputMode(btn.dataset.output);
@@ -2449,19 +2706,18 @@
       if (e.key === 'Enter') sendMsg();
     });
 
+    // If state restored editingMode='dark', apply data-theme so preview reflects it
+    if (state.includeDark && state.editingMode === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
     // Initial render
-    setOutputModeUI(state.outputMode);
+    syncOutputSegmentedUI();
     applyTokens();
     renderControls();
     renderSavedThemes();
     generateSnippet();
     updatePresetChips();
-  }
-
-  function setOutputModeUI(mode) {
-    document.querySelectorAll('#outputSegmented button').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.output === mode);
-    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
