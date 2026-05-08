@@ -134,10 +134,31 @@
 
   .page-header {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1140px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 24px;
     margin-bottom: 36px;
+  }
+
+  .preview-launch-btn {
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--accent);
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .preview-launch-btn:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
   }
 
   .page-title {
@@ -164,10 +185,10 @@
      ========================================= */
   .main-layout {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1140px;
     display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 40px;
+    grid-template-columns: 1fr 460px;
+    gap: 48px;
     align-items: start;
   }
 
@@ -318,6 +339,31 @@
   .save-theme-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+
+  /* Simple / Advanced mode toggle row at the top of the controls */
+  .mode-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--separator-color);
+    border-radius: 12px;
+    background: var(--chat-bg);
+  }
+
+  .mode-hint {
+    font-size: 11.5px;
+    color: var(--page-text-muted);
+    line-height: 1.4;
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  /* Simple-mode segmented selectors (bubble style + shape) */
+  .simple-seg {
+    flex-wrap: wrap;
   }
 
   /* Segmented control (Day/Night editing + output mode) */
@@ -541,6 +587,27 @@
     font-family: var(--font-mono);
   }
 
+  .gradient-swap {
+    width: 24px; height: 24px;
+    border: 1px solid var(--separator-color);
+    border-radius: 5px;
+    background: var(--page-bg);
+    color: var(--page-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color var(--transition), border-color var(--transition);
+  }
+
+  .gradient-swap:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
   .gradient-dirs {
     display: flex;
     gap: 3px;
@@ -576,7 +643,7 @@
   }
 
   .control-row input[type="range"] {
-    width: 140px;
+    width: 160px;
     accent-color: var(--accent);
     cursor: pointer;
   }
@@ -704,7 +771,17 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 16px;
+    gap: 20px;
+  }
+
+  .preview-tip {
+    font-size: 11px;
+    color: var(--page-text-muted);
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+    margin-top: 4px;
+    opacity: 0.8;
   }
 
   /* [data-cognigy-webchat-root] [data-cognigy-webchat].webchat */
@@ -1218,6 +1295,125 @@
     stroke-linejoin: round;
   }
 
+  /* Click-to-edit affordance: dashed accent outline on hover for elements with data-edit-token */
+  [data-edit-token] {
+    cursor: pointer;
+    outline: 2px dashed transparent;
+    outline-offset: 2px;
+    transition: outline-color 0.15s ease;
+  }
+
+  [data-edit-token]:hover {
+    outline-color: var(--accent);
+  }
+
+  /* Brief highlight when a control row is focused via click-to-edit */
+  @keyframes flash-control {
+    0%   { background: var(--accent-light, rgba(10,132,255,0.18)); }
+    100% { background: transparent; }
+  }
+
+  .control-row-flash {
+    animation: flash-control 1.2s ease-out;
+    border-radius: 8px;
+  }
+
+  /* Preview modal (live Cognigy widget preview) */
+  .preview-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+  .preview-modal[hidden] { display: none !important; }
+
+  .preview-modal-content {
+    background: var(--chat-bg);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1280px;
+    max-height: calc(100vh - 48px);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+  }
+
+  .preview-modal-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--separator-color);
+    gap: 16px;
+  }
+  .preview-modal-header h2 { font-size: 18px; font-weight: 500; color: var(--page-text); }
+  .preview-modal-sub {
+    font-size: 12.5px; color: var(--page-text-muted); margin-top: 4px; max-width: 600px;
+    line-height: 1.5;
+  }
+  .preview-modal-sub a { color: var(--accent); text-decoration: underline; }
+
+  .preview-modal-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--separator-color);
+    background: transparent; color: var(--page-text);
+    font-size: 20px; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background var(--transition);
+  }
+  .preview-modal-close:hover { background: var(--page-bg); }
+
+  .preview-modal-body {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .preview-script-pane {
+    display: flex; flex-direction: column;
+    padding: 20px;
+    border-right: 1px solid var(--separator-color);
+    gap: 10px;
+    overflow-y: auto;
+  }
+  .preview-script-pane label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--page-text-muted); font-weight: 500;
+  }
+  .preview-script-pane textarea {
+    flex: 1;
+    min-height: 220px;
+    padding: 12px;
+    border: 1px solid var(--separator-color);
+    border-radius: 8px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .preview-actions { display: flex; gap: 8px; }
+  .preview-actions button { flex: 1; }
+
+  .preview-iframe-pane {
+    background: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+  }
+  #previewFrame {
+    width: 100%; height: 100%;
+    border: none;
+    background: white;
+  }
+
+  @media (max-width: 900px) {
+    .preview-modal-body { grid-template-columns: 1fr; }
+    .preview-script-pane { border-right: none; border-bottom: 1px solid var(--separator-color); }
+  }
+
   /* Toast for copy feedback */
   .toast {
     position: fixed;
@@ -1276,6 +1472,7 @@
     <h1>Cognigy Webchat Theme Builder</h1>
     <p>Customize, preview, and copy the CSS for your Cognigy site</p>
   </div>
+  <button class="preview-launch-btn" id="previewLaunchBtn" type="button">Preview live ↗</button>
 </header>
 
 <!-- =========================================
@@ -1290,15 +1487,17 @@
     <div class="builder-section">
       <h2>Presets</h2>
       <div class="preset-row" id="presetRow">
-        <button class="preset-chip" data-preset="modern">Modern</button>
+        <button class="preset-chip" data-preset="halcyon">Halcyon</button>
+        <button class="preset-chip" data-preset="bloom">Bloom</button>
+        <button class="preset-chip" data-preset="hibiscus">Hibiscus</button>
+        <button class="preset-chip" data-preset="trailhead">Trailhead</button>
         <button class="preset-chip" data-preset="minimal">Minimal</button>
         <button class="preset-chip" data-preset="playful">Playful</button>
         <button class="preset-chip" data-preset="tech">Tech</button>
         <button class="preset-chip" data-preset="sunset">Sunset</button>
         <button class="preset-chip" data-preset="aurora">Aurora</button>
         <button class="preset-chip" data-preset="ocean">Ocean</button>
-        <button class="preset-chip" data-preset="carbon">Carbon</button>
-        <button class="preset-chip" data-preset="halcyon">Halcyon</button>
+        <button class="preset-chip" data-preset="onyx">Onyx</button>
       </div>
     </div>
 
@@ -1331,7 +1530,7 @@
         <div class="code-header">
           <span>style.css</span>
           <div class="code-actions">
-            <button class="action-btn" id="resetBtn" title="Reset to Modern preset">Reset</button>
+            <button class="action-btn" id="resetBtn" title="Reset to Halcyon preset">Reset</button>
             <button class="action-btn primary" id="copyBtn">Copy</button>
           </div>
         </div>
@@ -1346,10 +1545,10 @@
     <!-- Webchat widget mock -->
     <div class="webchat" role="region" aria-label="Cognigy webchat widget preview">
 
-      <div class="webchat-header-bar">
-        <div class="webchat-header-logo" aria-hidden="true">AI</div>
+      <div class="webchat-header-bar" data-edit-token="chatHeaderBg">
+        <div class="webchat-header-logo" data-edit-token="accent" aria-hidden="true">AI</div>
         <div class="header-text">
-          <div class="webchat-header-title">PlayStation Support</div>
+          <div class="webchat-header-title" data-edit-token="chatHeaderText">PlayStation Support</div>
           <div class="header-status">
             <span class="status-dot"></span>
             <span>Online &bull; Avg. reply &lt; 1 min</span>
@@ -1363,7 +1562,7 @@
         </button>
       </div>
 
-      <div class="webchat-chat-history" id="chatHistory">
+      <div class="webchat-chat-history" id="chatHistory" data-edit-token="chatBg">
 
         <div class="date-separator">
           <div class="date-separator-line"></div>
@@ -1374,7 +1573,7 @@
         <div class="webchat-message-row bot">
           <div class="webchat-avatar bot" aria-hidden="true">AI</div>
           <div class="msg-group">
-            <div class="regular-message bot">
+            <div class="regular-message bot" data-edit-token="botBubbleBg">
               Hi there! I'm your PlayStation Support assistant. How can I help you today?
             </div>
             <div class="msg-time">2:14 PM</div>
@@ -1382,15 +1581,15 @@
         </div>
 
         <div class="webchat-quick-reply-template-replies-container">
-          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">Account issue</button>
-          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">PS5 hardware</button>
-          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">PSN Store</button>
-          <button class="webchat-quick-reply-template-reply" onclick="selectReply(this)">Other</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Account issue</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">PS5 hardware</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">PSN Store</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Other</button>
         </div>
 
         <div class="webchat-message-row user" style="animation-delay:0.1s">
           <div class="msg-group">
-            <div class="regular-message user">
+            <div class="regular-message user" data-edit-token="userBubbleBg">
               I can't log into my PSN account. I changed my email recently.
             </div>
             <div class="msg-time">2:15 PM</div>
@@ -1401,7 +1600,7 @@
         <div class="webchat-message-row bot" style="animation-delay:0.2s">
           <div class="webchat-avatar bot" aria-hidden="true">AI</div>
           <div class="msg-group">
-            <div class="regular-message bot">
+            <div class="regular-message bot" data-edit-token="botBubbleBg">
               Got it - a recent email change can sometimes cause login issues. Let me pull up the account recovery options for you.
             </div>
             <div class="msg-time">2:15 PM</div>
@@ -1420,7 +1619,7 @@
       </div>
 
       <div class="webchat-input">
-        <div class="webchat-input-menu-form">
+        <div class="webchat-input-menu-form" data-edit-token="inputBg">
           <button class="webchat-input-button-menu" aria-label="Open menu" title="Menu">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
@@ -1431,7 +1630,7 @@
             aria-label="Message input"
             id="chatInput"
           />
-          <button class="webchat-input-button-send" aria-label="Send message" onclick="sendMsg()" title="Send">
+          <button class="webchat-input-button-send" data-edit-token="accent" aria-label="Send message" onclick="sendMsg()" title="Send">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
@@ -1447,16 +1646,48 @@
       <div class="webchat-unread-message-preview">
         Hi! Need help with your account?
       </div>
-      <button class="webchat-toggle-button" aria-label="Open support chat" title="Chat with support">
+      <button class="webchat-toggle-button" data-edit-token="toggleBg" aria-label="Open support chat" title="Chat with support">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;color:white"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <div class="webchat-unread-message-badge" aria-label="2 unread messages">2</div>
+        <div class="webchat-unread-message-badge" data-edit-token="badgeBg" aria-label="2 unread messages">2</div>
       </button>
     </div>
+
+    <p class="preview-tip">Tip: click any element in the preview to edit its color.</p>
 
   </div>
 </div>
 
 <div class="toast" id="toast">Copied!</div>
+
+<div class="preview-modal" id="previewModal" hidden>
+  <div class="preview-modal-content">
+    <header class="preview-modal-header">
+      <div>
+        <h2>Live Cognigy preview</h2>
+        <p class="preview-modal-sub">
+          Paste your Cognigy embed scripts below — your current theme CSS is automatically injected.
+          See the
+          <a href="https://github.com/Cognigy/Webchat/blob/main/docs/embedding.md" target="_blank" rel="noopener">embedding docs</a>.
+        </p>
+      </div>
+      <button class="preview-modal-close" id="previewModalClose" type="button" aria-label="Close">×</button>
+    </header>
+    <div class="preview-modal-body">
+      <div class="preview-script-pane">
+        <label for="previewScriptInput">Cognigy embed scripts</label>
+        <textarea id="previewScriptInput" rows="10" spellcheck="false" autocomplete="off"
+          placeholder='Paste your two &lt;script&gt; tags here, e.g.&#10;&#10;&lt;script src="https://github.com/Cognigy/Webchat/releases/latest/download/webchat.js"&gt;&lt;/script&gt;&#10;&lt;script&gt;&#10;  initWebchat("https://endpoint-...cognigy.cloud/...");&#10;&lt;/script&gt;'></textarea>
+        <div class="preview-actions">
+          <button class="action-btn primary" id="previewLaunchInner" type="button">Launch</button>
+          <button class="action-btn" id="previewClear" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="preview-iframe-pane">
+        <iframe id="previewFrame" sandbox="allow-scripts allow-popups allow-same-origin allow-forms" title="Cognigy widget preview"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   /* =========================================
@@ -1485,10 +1716,49 @@
     return `linear-gradient(${GRAD_DIR_CSS[g.dir] || 'to bottom right'}, ${g.from}, ${g.to})`;
   }
 
+  // Hex → "r,g,b" for use inside rgba()
+  function hexToRgb(hex) {
+    const h = String(hex || '').replace('#', '');
+    const v = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+    const n = parseInt(v, 16);
+    if (Number.isNaN(n)) return '0,0,0';
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  }
+
+  // Compose a box-shadow string from a color + strength preset
+  function buildShadow(color, strength) {
+    if (!strength || strength === 'none') return 'none';
+    const rgb = hexToRgb(color || '#000000');
+    if (strength === 'soft') {
+      return `0 8px 40px rgba(${rgb},0.12), 0 2px 8px rgba(${rgb},0.06)`;
+    }
+    // strong
+    return `0 12px 60px rgba(${rgb},0.25), 0 4px 16px rgba(${rgb},0.12)`;
+  }
+
+  // Color math helpers used by Simple mode derivation
+  function relLuminance(hex) {
+    const rgb = hexToRgb(hex).split(',').map(Number);
+    const lin = rgb.map(v => {
+      v = v / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  }
+  function isLight(hex) { return relLuminance(hex) > 0.5; }
+
+  // Mix hex a → hex b at ratio (0=a, 1=b)
+  function mixHex(a, b, ratio) {
+    const aRgb = hexToRgb(a).split(',').map(Number);
+    const bRgb = hexToRgb(b).split(',').map(Number);
+    const out = aRgb.map((v, i) => Math.round(v * (1 - ratio) + bRgb[i] * ratio));
+    return '#' + out.map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+  }
+
   const TOKEN_DEFS = {
     // ---- Colors ----
     accent: {
-      label: 'Accent', type: 'color', group: 'Colors',
+      label: 'Accent', type: 'color', group: 'Style',
       cssVar: '--accent',
       snippet: [
         { sel: `${SEL_ROOT} .webchat-header-logo`, prop: 'background-color' },
@@ -1498,12 +1768,12 @@
       ],
     },
     pageBg: {
-      label: 'Demo page background', type: 'color', group: 'Colors',
+      label: 'Demo page background', type: 'color', group: 'Style',
       cssVar: '--page-bg',
       previewOnly: true, // Not emitted — page background is outside the widget
     },
     chatBg: {
-      label: 'Chat background', type: 'colorWithGradient', group: 'Colors',
+      label: 'Chat background', type: 'colorWithGradient', group: 'Style',
       cssVar: '--chat-bg', gradKey: 'chatBgGradient',
       snippet: [
         { sel: SEL_ROOT, prop: 'background' },
@@ -1513,12 +1783,12 @@
       ],
     },
     chatHeaderBg: {
-      label: 'Header background', type: 'colorWithGradient', group: 'Colors',
+      label: 'Header background', type: 'colorWithGradient', group: 'Style',
       cssVar: '--chat-header-bg', gradKey: 'chatHeaderGradient',
       snippet: [{ sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'background' }],
     },
     chatHeaderText: {
-      label: 'Header text', type: 'color', group: 'Colors',
+      label: 'Header text', type: 'color', group: 'Style',
       cssVar: '--chat-header-text',
       snippet: [
         { sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'color' },
@@ -1526,32 +1796,32 @@
       ],
     },
     botBubbleBg: {
-      label: 'Bot bubble', type: 'colorWithGradient', group: 'Colors',
+      label: 'Bot bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--bot-bubble-bg', gradKey: 'botBubbleGradient',
       snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'background' }],
     },
     botBubbleText: {
-      label: 'Bot bubble text', type: 'color', group: 'Colors',
+      label: 'Bot bubble text', type: 'color', group: 'Style',
       cssVar: '--bot-bubble-text',
       snippet: [{ sel: `${SEL_ROOT} .regular-message.bot`, prop: 'color' }],
     },
     userBubbleBg: {
-      label: 'User bubble', type: 'colorWithGradient', group: 'Colors',
+      label: 'User bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--user-bubble-bg', gradKey: 'userBubbleGradient',
       snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'background' }],
     },
     userBubbleText: {
-      label: 'User bubble text', type: 'color', group: 'Colors',
+      label: 'User bubble text', type: 'color', group: 'Style',
       cssVar: '--user-bubble-text',
       snippet: [{ sel: `${SEL_ROOT} .regular-message.user`, prop: 'color' }],
     },
     inputBg: {
-      label: 'Input field', type: 'color', group: 'Colors',
+      label: 'Input field', type: 'color', group: 'Style',
       cssVar: '--input-bg',
       snippet: [{ sel: `${SEL_ROOT} .webchat-input-menu-form`, prop: 'background-color' }],
     },
     inputText: {
-      label: 'Input text', type: 'color', group: 'Colors',
+      label: 'Input text', type: 'color', group: 'Style',
       cssVar: '--input-text',
       snippet: [
         { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'color' },
@@ -1560,17 +1830,22 @@
       ],
     },
     badgeBg: {
-      label: 'Unread badge', type: 'color', group: 'Colors',
+      label: 'Unread badge', type: 'color', group: 'Style',
       cssVar: '--badge-bg',
       snippet: [{ sel: `${SEL_TOGGLE} .webchat-unread-message-badge`, prop: 'background-color' }],
     },
     toggleBg: {
-      label: 'Toggle (FAB)', type: 'color', group: 'Colors',
+      label: 'Toggle (FAB)', type: 'color', group: 'Style',
       cssVar: '--toggle-bg',
       snippet: [
         { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-color' },
         { sel: `${SEL_TOGGLE} .webchat-toggle-button`, prop: 'background-image', literal: 'none' },
       ],
+    },
+    shadowColor: {
+      label: 'Shadow color', type: 'color', group: 'Style',
+      cssVar: '--shadow-color',
+      // No snippet — shadowStrength owns the box-shadow rule and reads this value via tokenValues
     },
 
     // ---- Typography ----
@@ -1628,27 +1903,29 @@
 
     // ---- Sizing ----
     widgetWidth: {
-      label: 'Width', type: 'number', group: 'Sizing',
+      label: 'Width', type: 'slider', group: 'Sizing',
       cssVar: '--widget-width',
       min: 280, max: 480, unit: 'px',
       snippet: [{ sel: SEL_ROOT, prop: 'width' }],
     },
     widgetHeight: {
-      label: 'Height', type: 'number', group: 'Sizing',
+      label: 'Height', type: 'slider', group: 'Sizing',
       cssVar: '--widget-height',
       min: 400, max: 800, unit: 'px',
       snippet: [{ sel: SEL_ROOT, prop: 'height' }],
     },
 
     // ---- Effect ----
-    shadow: {
-      label: 'Drop shadow', type: 'select', group: 'Effect',
+    shadowStrength: {
+      label: 'Shadow strength', type: 'select', group: 'Style',
       cssVar: '--shadow-chat',
       options: [
         { label: 'None', value: 'none' },
-        { label: 'Soft', value: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' },
-        { label: 'Strong', value: '0 12px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.12)' },
+        { label: 'Soft', value: 'soft' },
+        { label: 'Strong', value: 'strong' },
       ],
+      // Computed value reads shadowColor sibling via tokenValues
+      compute: (value, tokenValues) => buildShadow(tokenValues.shadowColor, value),
       snippet: [{ sel: SEL_ROOT, prop: 'box-shadow' }],
     },
   };
@@ -1661,39 +1938,109 @@
   const G_ON  = (from, to, dir) => ({ enabled: true,  from, to, dir: dir || 'diag' });
 
   const PRESETS = {
-    modern: {
-      name: 'Modern',
+    trailhead: {
+      name: 'Trailhead',
       light: {
-        accent: '#D4622A', pageBg: '#F0EDE8', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#FAF6F0', 'down'),
-        chatHeaderBg: '#1C1B18', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#1C1B18', '#3A3835', 'diag'),
-        botBubbleBg: '#F4F2EE', botBubbleText: '#1C1B18',
-        botBubbleGradient: G_OFF('#F4F2EE', '#E5E2DC', 'down'),
-        userBubbleBg: '#1C1B18', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#1C1B18', '#D4622A', 'diag'),
-        inputBg: '#FAFAF8', inputText: '#1C1B18',
-        badgeBg: '#D4622A', toggleBg: '#1C1B18',
+        accent: '#1F4D2C', pageBg: '#FAF6EE', chatBg: '#FFFCF5',
+        chatBgGradient: G_ON('#FFFCF5', '#F4ECDC', 'down'),
+        chatHeaderBg: '#1F4D2C', chatHeaderText: '#FAF6EE',
+        chatHeaderGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
+        botBubbleBg: '#F4ECDC', botBubbleText: '#1F2D1F',
+        botBubbleGradient: G_OFF('#F4ECDC', '#E8DEC5', 'down'),
+        userBubbleBg: '#1F4D2C', userBubbleText: '#FAF6EE',
+        userBubbleGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
+        inputBg: '#F4ECDC', inputText: '#1F2D1F',
+        badgeBg: '#D4753A', toggleBg: '#1F4D2C',
+        shadowColor: '#1F2D1F', shadowStrength: 'soft',
         fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 20, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
       },
       dark: {
-        accent: '#F07A47', pageBg: '#111110', chatBg: '#1C1B18',
-        chatBgGradient: G_ON('#1C1B18', '#161513', 'down'),
-        chatHeaderBg: '#111110', chatHeaderText: '#EAE8E3',
-        chatHeaderGradient: G_OFF('#111110', '#262522', 'diag'),
-        botBubbleBg: '#262522', botBubbleText: '#EAE8E3',
-        botBubbleGradient: G_OFF('#262522', '#333230', 'down'),
-        userBubbleBg: '#D4622A', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#D4622A', '#F07A47', 'diag'),
-        inputBg: '#262522', inputText: '#EAE8E3',
-        badgeBg: '#F07A47', toggleBg: '#D4622A',
+        accent: '#5FA873', pageBg: '#0F1A12', chatBg: '#1A2920',
+        chatBgGradient: G_ON('#1A2920', '#0F1A12', 'down'),
+        chatHeaderBg: '#0F1A12', chatHeaderText: '#F4ECDC',
+        chatHeaderGradient: G_OFF('#0F1A12', '#1A2920', 'down'),
+        botBubbleBg: '#243B2E', botBubbleText: '#F4ECDC',
+        botBubbleGradient: G_OFF('#243B2E', '#2D4A3A', 'down'),
+        userBubbleBg: '#5FA873', userBubbleText: '#0F1A12',
+        userBubbleGradient: G_OFF('#5FA873', '#4A8C5C', 'down'),
+        inputBg: '#243B2E', inputText: '#F4ECDC',
+        badgeBg: '#E89762', toggleBg: '#5FA873',
+        shadowColor: '#000000', shadowStrength: 'strong',
         fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 20, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+      },
+    },
+    bloom: {
+      name: 'Bloom',
+      light: {
+        accent: '#7B5FE0', pageBg: '#F5F1FF', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#FCE9F1', 'diag'),
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#2D1B69',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#F5F1FF', 'down'),
+        botBubbleBg: '#F5F1FF', botBubbleText: '#2D1B69',
+        botBubbleGradient: G_OFF('#F5F1FF', '#EDE7FB', 'down'),
+        userBubbleBg: '#7B5FE0', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#9B7DEB', '#EC75A9', 'right'),
+        inputBg: '#F5F1FF', inputText: '#2D1B69',
+        badgeBg: '#EC75A9', toggleBg: '#7B5FE0',
+        shadowColor: '#7B5FE0', shadowStrength: 'strong',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+      },
+      dark: {
+        accent: '#9B7DEB', pageBg: '#1A0F2E', chatBg: '#241638',
+        chatBgGradient: G_ON('#241638', '#3D1B5C', 'diag'),
+        chatHeaderBg: '#241638', chatHeaderText: '#F5F1FF',
+        chatHeaderGradient: G_OFF('#241638', '#2D1B69', 'down'),
+        botBubbleBg: '#2D1B69', botBubbleText: '#F5F1FF',
+        botBubbleGradient: G_OFF('#2D1B69', '#3D2580', 'down'),
+        userBubbleBg: '#9B7DEB', userBubbleText: '#1A0F2E',
+        userBubbleGradient: G_ON('#9B7DEB', '#EC75A9', 'right'),
+        inputBg: '#2D1B69', inputText: '#F5F1FF',
+        badgeBg: '#EC75A9', toggleBg: '#9B7DEB',
+        shadowColor: '#7B5FE0', shadowStrength: 'strong',
+        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+      },
+    },
+    hibiscus: {
+      name: 'Hibiscus',
+      light: {
+        accent: '#E94545', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
+        chatBgGradient: G_OFF('#FFFFFF', '#FAFAFA', 'down'),
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#1A1F36',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#F5F5F7', 'down'),
+        botBubbleBg: '#F5F5F7', botBubbleText: '#1A1F36',
+        botBubbleGradient: G_OFF('#F5F5F7', '#EBEBEF', 'down'),
+        userBubbleBg: '#E94545', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#E94545', '#D63838', 'down'),
+        inputBg: '#F5F5F7', inputText: '#1A1F36',
+        badgeBg: '#E94545', toggleBg: '#E94545',
+        shadowColor: '#E94545', shadowStrength: 'soft',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+      },
+      dark: {
+        accent: '#FF5A5A', pageBg: '#0F1419', chatBg: '#1A1F36',
+        chatBgGradient: G_OFF('#1A1F36', '#0F1419', 'down'),
+        chatHeaderBg: '#1A1F36', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#1A1F36', '#252B45', 'down'),
+        botBubbleBg: '#252B45', botBubbleText: '#FFFFFF',
+        botBubbleGradient: G_OFF('#252B45', '#2E3554', 'down'),
+        userBubbleBg: '#FF5A5A', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#FF5A5A', '#E94545', 'down'),
+        inputBg: '#252B45', inputText: '#FFFFFF',
+        badgeBg: '#FF5A5A', toggleBg: '#FF5A5A',
+        shadowColor: '#000000', shadowStrength: 'strong',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
+        radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
       },
     },
     minimal: {
@@ -1712,7 +2059,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: 'none',
+        shadowColor: '#000000', shadowStrength: 'none',
       },
       dark: {
         accent: '#F0F0F0', pageBg: '#0A0A0A', chatBg: '#141414',
@@ -1728,7 +2075,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: 'none',
+        shadowColor: '#000000', shadowStrength: 'none',
       },
     },
     playful: {
@@ -1747,7 +2094,7 @@
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
         radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 60px rgba(124,58,237,0.25), 0 4px 16px rgba(124,58,237,0.12)',
+        shadowColor: '#7C3AED', shadowStrength: 'strong',
       },
       dark: {
         accent: '#A78BFA', pageBg: '#1A0B2E', chatBg: '#251A3E',
@@ -1763,7 +2110,7 @@
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15,
         radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 60px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.3)',
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
     tech: {
@@ -1782,7 +2129,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06)',
+        shadowColor: '#0F172A', shadowStrength: 'soft',
       },
       dark: {
         accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
@@ -1798,7 +2145,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
     sunset: {
@@ -1817,7 +2164,7 @@
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 60px rgba(180,58,171,0.20), 0 4px 16px rgba(232,74,138,0.12)',
+        shadowColor: '#B43AAB', shadowStrength: 'strong',
       },
       dark: {
         accent: '#FF6E5F', pageBg: '#1F0F1A', chatBg: '#1F0F1A',
@@ -1833,7 +2180,7 @@
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)',
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
     aurora: {
@@ -1852,7 +2199,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(88,101,242,0.15), 0 2px 8px rgba(0,0,0,0.06)',
+        shadowColor: '#5865F2', shadowStrength: 'soft',
       },
       dark: {
         accent: '#5865F2', pageBg: '#1E1F22', chatBg: '#2B2D31',
@@ -1868,7 +2215,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
         radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
     ocean: {
@@ -1887,7 +2234,7 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
         radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(15,20,25,0.10), 0 2px 8px rgba(15,20,25,0.06)',
+        shadowColor: '#0F1419', shadowStrength: 'soft',
       },
       dark: {
         accent: '#1D9BF0', pageBg: '#000000', chatBg: '#000000',
@@ -1903,77 +2250,77 @@
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
         radiusChat: 16, radiusBubble: 22, radiusInput: 22, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 8px 40px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)',
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
-    carbon: {
-      name: 'Carbon',
+    onyx: {
+      name: 'Onyx',
       light: {
-        accent: '#D4B98A', pageBg: '#F5F1EA', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#F5F1EA', 'down'),
-        chatHeaderBg: '#0B0B0C', chatHeaderText: '#F5F1EA',
-        chatHeaderGradient: G_ON('#0B0B0C', '#1A1612', 'down'),
-        botBubbleBg: '#F5F1EA', botBubbleText: '#0B0B0C',
-        botBubbleGradient: G_OFF('#F5F1EA', '#EDE6DA', 'down'),
-        userBubbleBg: '#0B0B0C', userBubbleText: '#D4B98A',
-        userBubbleGradient: G_ON('#0B0B0C', '#2A2520', 'diag'),
-        inputBg: '#F5F1EA', inputText: '#0B0B0C',
-        badgeBg: '#D4B98A', toggleBg: '#0B0B0C',
+        accent: '#C9A961', pageBg: '#0E0B07', chatBg: '#1A1612',
+        chatBgGradient: G_ON('#1A1612', '#0E0B07', 'down'),
+        chatHeaderBg: '#0E0B07', chatHeaderText: '#F5EDD8',
+        chatHeaderGradient: G_OFF('#0E0B07', '#1A1612', 'down'),
+        botBubbleBg: '#221C16', botBubbleText: '#F5EDD8',
+        botBubbleGradient: G_OFF('#221C16', '#2A2520', 'down'),
+        userBubbleBg: '#C9A961', userBubbleText: '#1A1612',
+        userBubbleGradient: G_ON('#C9A961', '#A88B4A', 'diag'),
+        inputBg: '#221C16', inputText: '#F5EDD8',
+        badgeBg: '#C9A961', toggleBg: '#C9A961',
+        shadowColor: '#000000', shadowStrength: 'strong',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
-        radiusChat: 4, radiusBubble: 6, radiusInput: 4, radiusToggle: 50,
+        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 50px rgba(11,11,12,0.18), 0 2px 6px rgba(11,11,12,0.10)',
       },
       dark: {
-        accent: '#D4B98A', pageBg: '#000000', chatBg: '#0B0B0C',
-        chatBgGradient: G_ON('#0B0B0C', '#000000', 'down'),
-        chatHeaderBg: '#000000', chatHeaderText: '#F5F1EA',
-        chatHeaderGradient: G_ON('#000000', '#0B0B0C', 'down'),
-        botBubbleBg: '#1A1612', botBubbleText: '#F5F1EA',
-        botBubbleGradient: G_OFF('#1A1612', '#221C16', 'down'),
-        userBubbleBg: '#D4B98A', userBubbleText: '#0B0B0C',
-        userBubbleGradient: G_ON('#D4B98A', '#B89B66', 'diag'),
-        inputBg: '#1A1612', inputText: '#F5F1EA',
-        badgeBg: '#D4B98A', toggleBg: '#D4B98A',
+        accent: '#D4B978', pageBg: '#000000', chatBg: '#000000',
+        chatBgGradient: G_ON('#000000', '#0A0908', 'down'),
+        chatHeaderBg: '#000000', chatHeaderText: '#F5EDD8',
+        chatHeaderGradient: G_OFF('#000000', '#0A0908', 'down'),
+        botBubbleBg: '#141210', botBubbleText: '#F5EDD8',
+        botBubbleGradient: G_OFF('#141210', '#1A1612', 'down'),
+        userBubbleBg: '#D4B978', userBubbleText: '#000000',
+        userBubbleGradient: G_ON('#D4B978', '#A88B4A', 'diag'),
+        inputBg: '#141210', inputText: '#F5EDD8',
+        badgeBg: '#D4B978', toggleBg: '#D4B978',
+        shadowColor: '#000000', shadowStrength: 'strong',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14,
-        radiusChat: 4, radiusBubble: 6, radiusInput: 4, radiusToggle: 50,
+        radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 12px 50px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.3)',
       },
     },
     halcyon: {
       name: 'Halcyon',
       light: {
-        accent: '#6B5BD1', pageBg: '#FAF7F2', chatBg: '#FFFAF5',
-        chatBgGradient: G_ON('#FFFAF5', '#F0E6F5', 'diag'),
-        chatHeaderBg: '#FFFFFF', chatHeaderText: '#2A2540',
-        chatHeaderGradient: G_ON('#FFFFFF', '#F5EDF7', 'down'),
-        botBubbleBg: '#FFFFFF', botBubbleText: '#2A2540',
-        botBubbleGradient: G_ON('#FFFFFF', '#FCF1F7', 'down'),
-        userBubbleBg: '#6B5BD1', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_ON('#6B5BD1', '#E2547B', 'diag'),
-        inputBg: '#FAF7F5', inputText: '#2A2540',
-        badgeBg: '#E2547B', toggleBg: '#6B5BD1',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 24, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
+        accent: '#0A84FF', pageBg: '#F2F2F7', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F5F8FF', 'down'),
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#1C1C1E',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#F8F8FA', 'down'),
+        botBubbleBg: '#F2F2F7', botBubbleText: '#1C1C1E',
+        botBubbleGradient: G_OFF('#F2F2F7', '#E5E5EA', 'down'),
+        userBubbleBg: '#0A84FF', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#0A84FF', '#5AC8FA', 'diag'),
+        inputBg: '#F2F2F7', inputText: '#1C1C1E',
+        badgeBg: '#FF3B30', toggleBg: '#0A84FF',
+        shadowColor: '#0A84FF', shadowStrength: 'soft',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 20, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 16px 60px rgba(107,91,209,0.18), 0 4px 16px rgba(226,84,123,0.10)',
       },
       dark: {
-        accent: '#A78BFA', pageBg: '#0A0712', chatBg: '#14102B',
-        chatBgGradient: G_ON('#14102B', '#2D1A3D', 'diag'),
-        chatHeaderBg: '#1F1735', chatHeaderText: '#F0E8FF',
-        chatHeaderGradient: G_ON('#1F1735', '#14102B', 'down'),
-        botBubbleBg: '#1F1735', botBubbleText: '#E8DFF7',
-        botBubbleGradient: G_ON('#1F1735', '#2A1F4A', 'down'),
-        userBubbleBg: '#6B5BD1', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_ON('#6B5BD1', '#E2547B', 'diag'),
-        inputBg: '#1F1735', inputText: '#F0E8FF',
-        badgeBg: '#FF6B9D', toggleBg: '#6B5BD1',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14,
-        radiusChat: 24, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
+        accent: '#0A84FF', pageBg: '#000000', chatBg: '#1C1C1E',
+        chatBgGradient: G_ON('#1C1C1E', '#000000', 'down'),
+        chatHeaderBg: '#1C1C1E', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#1C1C1E', '#2C2C2E', 'down'),
+        botBubbleBg: '#2C2C2E', botBubbleText: '#FFFFFF',
+        botBubbleGradient: G_OFF('#2C2C2E', '#3A3A3C', 'down'),
+        userBubbleBg: '#0A84FF', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_ON('#0A84FF', '#5AC8FA', 'diag'),
+        inputBg: '#2C2C2E', inputText: '#FFFFFF',
+        badgeBg: '#FF453A', toggleBg: '#0A84FF',
+        shadowColor: '#000000', shadowStrength: 'strong',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 15,
+        radiusChat: 20, radiusBubble: 22, radiusInput: 20, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
-        shadow: '0 16px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(107,91,209,0.30)',
       },
     },
   };
@@ -1987,10 +2334,17 @@
   const state = {
     editingMode: 'light',            // 'light' | 'dark'
     outputMode: 'light',             // 'light' | 'dark' | 'both' — defaults to 'light' (no dark on first load)
-    activePreset: 'modern',
+    activePreset: 'halcyon',
     includeDark: false,              // opt-in; true if user enabled dark mode editing
-    light: { ...PRESETS.modern.light },
-    dark:  { ...PRESETS.modern.dark },
+    simpleMode: false,               // false = full controls; true = 4-control simple mode
+    simple: {                        // last simple-mode picks (preserved when toggling back to advanced)
+      primary: '#0A84FF',
+      surface: '#FFFFFF',
+      bubble: 'light',               // 'light' | 'dark' (which side gets primary fill)
+      shape: 'balanced',             // 'rounded' | 'sharp' | 'balanced'
+    },
+    light: { ...PRESETS.halcyon.light },
+    dark:  { ...PRESETS.halcyon.dark },
   };
 
   function saveState() {
@@ -1999,10 +2353,24 @@
         outputMode: state.outputMode,
         activePreset: state.activePreset,
         includeDark: state.includeDark,
+        simpleMode: state.simpleMode,
+        simple: state.simple,
         light: state.light,
         dark:  state.dark,
       }));
     } catch (e) { /* ignore quota errors */ }
+  }
+
+  // Migrate the legacy `shadow` literal string field into shadowColor + shadowStrength
+  function migrateShadowField(tokens) {
+    if (!tokens || tokens.shadow === undefined) return tokens;
+    const out = { ...tokens };
+    if (out.shadowColor === undefined) out.shadowColor = '#000000';
+    if (out.shadowStrength === undefined) {
+      out.shadowStrength = (out.shadow === 'none' || !out.shadow) ? 'none' : 'soft';
+    }
+    delete out.shadow;
+    return out;
   }
 
   function loadState() {
@@ -2019,8 +2387,8 @@
       // v1 used day/night; v2 uses light/dark — accept either
       const lightSrc = parsed.light || parsed.day;
       const darkSrc  = parsed.dark  || parsed.night;
-      if (lightSrc) state.light = { ...PRESETS.modern.light, ...lightSrc };
-      if (darkSrc)  state.dark  = { ...PRESETS.modern.dark, ...darkSrc };
+      if (lightSrc) state.light = { ...PRESETS.halcyon.light, ...migrateShadowField(lightSrc) };
+      if (darkSrc)  state.dark  = { ...PRESETS.halcyon.dark,  ...migrateShadowField(darkSrc) };
 
       // includeDark: explicit value wins; else derive from presence of dark colors in legacy
       if (typeof parsed.includeDark === 'boolean') {
@@ -2035,6 +2403,11 @@
         state.outputMode = map[parsed.outputMode] || 'light';
       }
       if (parsed.activePreset !== undefined) state.activePreset = parsed.activePreset;
+
+      if (typeof parsed.simpleMode === 'boolean') state.simpleMode = parsed.simpleMode;
+      if (parsed.simple && typeof parsed.simple === 'object') {
+        state.simple = { ...state.simple, ...parsed.simple };
+      }
 
       // Snap outputMode to light if dark isn't included
       if (!state.includeDark && state.outputMode !== 'light') state.outputMode = 'light';
@@ -2052,6 +2425,10 @@
       const grad = tokenValues[def.gradKey];
       const out = (grad && grad.enabled) ? gradientCSS(grad) : value;
       return `  ${def.cssVar}: ${out};`;
+    }
+
+    if (typeof def.compute === 'function') {
+      return `  ${def.cssVar}: ${def.compute(value, tokenValues)};`;
     }
 
     const unit = (def.unit && (def.type === 'slider' || def.type === 'number')) ? def.unit : '';
@@ -2095,6 +2472,8 @@
       if (def.type === 'colorWithGradient') {
         const grad = tokenValues[def.gradKey];
         finalValue = (grad && grad.enabled) ? gradientCSS(grad) : value;
+      } else if (typeof def.compute === 'function') {
+        finalValue = def.compute(value, tokenValues);
       } else {
         finalValue = valueWithUnit(key, value);
       }
@@ -2161,13 +2540,28 @@
 
     const tokens = state[state.editingMode];
     const includeDark = state.includeDark;
+    const simpleMode = state.simpleMode;
     let html = '';
 
+    // Simple / Advanced mode toggle (above all groups)
+    html += `<div class="mode-row">` +
+      `<div class="segmented" id="modeSegmented" aria-label="Edit mode">` +
+        `<button data-edit-style="simple"${simpleMode ? ' class="active"' : ''} type="button">Simple</button>` +
+        `<button data-edit-style="advanced"${!simpleMode ? ' class="active"' : ''} type="button">Advanced</button>` +
+      `</div>` +
+      `<p class="mode-hint">${simpleMode
+        ? 'Pick four choices — we derive the rest. Switch to Advanced for full control.'
+        : 'Every token, individually controllable. Simple mode below collapses this to 4 picks.'}</p>` +
+    `</div>`;
+
     for (const [groupName, items] of Object.entries(groups)) {
+      // In simple mode, only render the Style group
+      if (simpleMode && groupName !== 'Style') continue;
+
       html += `<div class="control-group" style="margin-top: 4px;">`;
 
       // Group header
-      if (groupName === 'Colors') {
+      if (groupName === 'Style') {
         // h3 + segmented control on the right when dark mode is on
         let segmented = '';
         if (includeDark) {
@@ -2183,8 +2577,8 @@
         html += `<h3><span>${groupName}</span>${caption}</h3>`;
       }
 
-      // Colors group only: dark-mode toggle + helper text
-      if (groupName === 'Colors') {
+      // Style group only: dark-mode toggle + helper text
+      if (groupName === 'Style') {
         const helperText = includeDark
           ? "Editing two palettes — switch between them with the toggle on the right."
           : "When on, you'll set two color palettes. Users with system-level dark mode will see the dark one automatically.";
@@ -2197,9 +2591,13 @@
           `</div>`;
       }
 
-      // Control rows
-      for (const { key, def } of items) {
-        html += renderControl(key, def, tokens[key]);
+      // Control rows — in simple mode, render the four simple controls instead of the full set
+      if (simpleMode && groupName === 'Style') {
+        html += renderSimpleControls();
+      } else {
+        for (const { key, def } of items) {
+          html += renderControl(key, def, tokens[key]);
+        }
       }
 
       html += `</div>`;
@@ -2236,6 +2634,43 @@
       }
     });
 
+    // Wire gradient swap buttons (swap from ↔ to in the active mode)
+    container.querySelectorAll('[data-grad-swap]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.gradSwap;
+        const grad = state[state.editingMode][target];
+        if (!grad) return;
+        const tmp = grad.from;
+        grad.from = grad.to;
+        grad.to = tmp;
+        state.activePreset = null;
+        applyTokens();
+        generateSnippet();
+        saveState();
+        renderControls();
+        updatePresetChips();
+      });
+    });
+
+    // Wire Simple / Advanced segmented control
+    const modeSeg = container.querySelector('#modeSegmented');
+    if (modeSeg) {
+      modeSeg.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-edit-style]');
+        if (btn) setSimpleMode(btn.dataset.editStyle === 'simple');
+      });
+    }
+
+    // Wire Simple-mode controls (color pickers + segmented selectors)
+    container.querySelectorAll('[data-simple-field]').forEach(input => {
+      const field = input.dataset.simpleField;
+      if (input.tagName === 'BUTTON') {
+        input.addEventListener('click', () => handleSimpleChange(field, input.dataset.simpleValue));
+      } else {
+        input.addEventListener('input', () => handleSimpleChange(field, input.value));
+      }
+    });
+
     // Wire dark-mode opt-in toggle (rendered inside the Colors group)
     const dmToggle = container.querySelector('#includeDarkToggle');
     if (dmToggle) dmToggle.addEventListener('change', () => setIncludeDark(dmToggle.checked));
@@ -2248,6 +2683,42 @@
         if (btn) setEditingMode(btn.dataset.mode);
       });
     }
+  }
+
+  // Simple-mode renderer: emits 4 control rows (primary color, surface color, bubble style, shape)
+  function renderSimpleControls() {
+    const s = state.simple;
+    const segBtn = (field, value, label) =>
+      `<button data-simple-field="${field}" data-simple-value="${value}" type="button"` +
+      `${s[field] === value ? ' class="active"' : ''}>${label}</button>`;
+
+    return `
+      <div class="control-row">
+        <label>Primary color</label>
+        <input type="color" data-simple-field="primary" value="${escapeAttr(s.primary)}">
+        <span class="value-display">${escapeAttr(s.primary)}</span>
+      </div>
+      <div class="control-row">
+        <label>Surface color</label>
+        <input type="color" data-simple-field="surface" value="${escapeAttr(s.surface)}">
+        <span class="value-display">${escapeAttr(s.surface)}</span>
+      </div>
+      <div class="control-row" style="grid-template-columns: 1fr auto;">
+        <label>Bubble style</label>
+        <div class="segmented simple-seg">
+          ${segBtn('bubble', 'light', 'Light')}
+          ${segBtn('bubble', 'dark', 'Dark')}
+        </div>
+      </div>
+      <div class="control-row" style="grid-template-columns: 1fr auto;">
+        <label>Shape</label>
+        <div class="segmented simple-seg">
+          ${segBtn('shape', 'rounded', 'Rounded')}
+          ${segBtn('shape', 'balanced', 'Balanced')}
+          ${segBtn('shape', 'sharp', 'Sharp')}
+        </div>
+      </div>
+    `;
   }
 
   function renderControl(key, def, value) {
@@ -2277,7 +2748,7 @@
           html += `
             <div class="gradient-detail" data-grad-detail="${def.gradKey}">
               <input type="color" data-grad-target="${def.gradKey}" data-grad-field="from" value="${escapeAttr(grad.from)}" title="Start color">
-              <span class="gradient-arrow">→</span>
+              <button class="gradient-swap" data-grad-swap="${def.gradKey}" type="button" title="Swap colors">⇄</button>
               <input type="color" data-grad-target="${def.gradKey}" data-grad-field="to" value="${escapeAttr(grad.to)}" title="End color">
               <div class="gradient-dirs">${dirs}</div>
             </div>`;
@@ -2371,6 +2842,92 @@
 
     // Toggling enabled changes which sub-elements exist — full re-render
     if (field === 'enabled') renderControls();
+  }
+
+  /* =========================================
+     SIMPLE MODE
+     ========================================= */
+  const SHAPE_PRESETS = {
+    rounded:  { radiusChat: 24, radiusBubble: 22, radiusInput: 20, radiusToggle: 50 },
+    sharp:    { radiusChat: 6,  radiusBubble: 8,  radiusInput: 6,  radiusToggle: 50 },
+    balanced: { radiusChat: 14, radiusBubble: 16, radiusInput: 14, radiusToggle: 50 },
+  };
+
+  // Derive a full token set from the 4 Simple-mode picks
+  function deriveFromSimple(simple) {
+    const primary = simple.primary;
+    const surface = simple.surface;
+    const text       = isLight(surface) ? '#1A1A1A' : '#F5F5F5';
+    const onPrimary  = isLight(primary) ? '#1A1A1A' : '#FFFFFF';
+    const tint = (color, ratio) => mixHex(color, surface, ratio);
+
+    const isBotLight = simple.bubble === 'light';
+    const botBg   = isBotLight ? tint(primary, 0.92) : tint(primary, 0.65);
+    const botText = isBotLight ? text : onPrimary;
+
+    const shape = SHAPE_PRESETS[simple.shape] || SHAPE_PRESETS.balanced;
+
+    return {
+      accent: primary,
+      pageBg: tint(surface, 0.95),
+      chatBg: surface,
+      chatBgGradient: G_OFF(surface, tint(surface, 0.9), 'down'),
+      chatHeaderBg: surface,
+      chatHeaderText: text,
+      chatHeaderGradient: G_OFF(surface, tint(surface, 0.95), 'down'),
+      botBubbleBg: botBg,
+      botBubbleText: botText,
+      botBubbleGradient: G_OFF(botBg, tint(botBg, 0.95), 'down'),
+      userBubbleBg: primary,
+      userBubbleText: onPrimary,
+      userBubbleGradient: G_OFF(primary, tint(primary, 0.85), 'down'),
+      inputBg: tint(surface, 0.96),
+      inputText: text,
+      badgeBg: primary,
+      toggleBg: primary,
+      shadowColor: primary,
+      shadowStrength: 'soft',
+      fontFamily: state.light.fontFamily || "'Inter', system-ui, sans-serif",
+      msgFontSize: state.light.msgFontSize || 14,
+      widgetWidth: state.light.widgetWidth || 380,
+      widgetHeight: state.light.widgetHeight || 580,
+      ...shape,
+    };
+  }
+
+  // Apply current state.simple picks → state.light (and state.dark mirror)
+  function applySimpleToState() {
+    const derived = deriveFromSimple(state.simple);
+    state.light = derived;
+    // Mirror to dark — flip surface/text expectations slightly so dark mode reads as dark
+    const darkSurface = isLight(state.simple.surface)
+      ? mixHex(state.simple.surface, '#000000', 0.85)
+      : state.simple.surface;
+    state.dark = deriveFromSimple({ ...state.simple, surface: darkSurface });
+    state.activePreset = null;
+  }
+
+  function setSimpleMode(on) {
+    state.simpleMode = !!on;
+    if (state.simpleMode) {
+      // Re-derive in case the user tweaked their last simple picks elsewhere
+      applySimpleToState();
+      applyTokens();
+      generateSnippet();
+    }
+    saveState();
+    renderControls();
+    updatePresetChips();
+  }
+
+  function handleSimpleChange(field, value) {
+    state.simple = { ...state.simple, [field]: value };
+    applySimpleToState();
+    applyTokens();
+    generateSnippet();
+    saveState();
+    renderControls();
+    updatePresetChips();
   }
 
   /* =========================================
@@ -2513,9 +3070,9 @@
     const themes = loadSavedThemes();
     const theme = themes.find(t => t.id === id);
     if (!theme) return;
-    // Merge over Modern defaults so saved themes that predate new tokens still work
-    state.light = { ...PRESETS.modern.light, ...theme.light };
-    state.dark  = { ...PRESETS.modern.dark,  ...theme.dark };
+    // Merge over Halcyon defaults so saved themes that predate new tokens still work
+    state.light = { ...PRESETS.halcyon.light, ...migrateShadowField(theme.light) };
+    state.dark  = { ...PRESETS.halcyon.dark,  ...migrateShadowField(theme.dark) };
     // If the saved theme has any dark colors set, surface them by enabling dark mode
     if (theme.dark && Object.keys(theme.dark).length > 0) {
       state.includeDark = true;
@@ -2541,7 +3098,38 @@
         `</div>`;
     }
     html += `<button class="save-theme-btn" id="saveThemeBtn">+ Save current...</button>`;
+    html += `<button class="save-theme-btn" id="importThemeBtn">⇣ Import…</button>`;
     row.innerHTML = html;
+  }
+
+  function importTheme() {
+    const raw = prompt('Paste theme JSON (must include a "light" object, optionally "dark"):');
+    if (!raw) return;
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch (e) { alert('Invalid JSON: ' + e.message); return; }
+    if (!parsed || typeof parsed !== 'object' || !parsed.light || typeof parsed.light !== 'object') {
+      alert('JSON must include a "light" object with token values.');
+      return;
+    }
+
+    const rawName = prompt('Name this imported theme:') || 'Imported';
+    const name = rawName.trim().slice(0, 40) || 'Imported';
+
+    const themes = loadSavedThemes();
+    const finalName = uniqueThemeName(themes, name);
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+    themes.push({
+      id, name: finalName,
+      light: migrateShadowField(parsed.light),
+      dark:  migrateShadowField(parsed.dark || {}),
+      savedAt: new Date().toISOString(),
+    });
+    persistSavedThemes(themes);
+    loadSavedTheme(id);  // immediately apply
   }
 
   /* =========================================
@@ -2550,12 +3138,14 @@
   function applyPreset(name) {
     const preset = PRESETS[name];
     if (!preset) return;
-    // Merge over Modern defaults so any newly-added tokens are populated.
+    // Merge over Halcyon defaults so any newly-added tokens are populated.
     // Don't change includeDark — preset's dark palette gets loaded into state.dark either way,
     // and surfaces in the UI only when the user opts in.
-    state.light = { ...PRESETS.modern.light, ...preset.light };
-    state.dark  = { ...PRESETS.modern.dark,  ...preset.dark };
+    state.light = { ...PRESETS.halcyon.light, ...preset.light };
+    state.dark  = { ...PRESETS.halcyon.dark,  ...preset.dark };
     state.activePreset = name;
+    // Exit Simple mode when applying a preset — preset implies user wants the full palette
+    if (state.simpleMode) state.simpleMode = false;
     applyTokens();
     renderControls();
     generateSnippet();
@@ -2603,14 +3193,14 @@
   }
 
   function resetTheme() {
-    if (!confirm('Reset to the Modern preset? Your customizations will be lost.')) return;
+    if (!confirm('Reset to the Halcyon preset? Your customizations will be lost.')) return;
     localStorage.removeItem(STORAGE_KEY);
     state.outputMode = 'light';
     state.includeDark = false;
     state.editingMode = 'light';
     document.documentElement.removeAttribute('data-theme');
     syncOutputSegmentedUI();
-    applyPreset('modern');
+    applyPreset('halcyon');
   }
 
   /* =========================================
@@ -2624,7 +3214,7 @@
     userRow.className = 'webchat-message-row user';
     userRow.innerHTML = `
       <div class="msg-group">
-        <div class="regular-message user">${text}</div>
+        <div class="regular-message user" data-edit-token="userBubbleBg">${text}</div>
         <div class="msg-time">Just now</div>
       </div>
       <div class="webchat-avatar user" aria-hidden="true">DT</div>
@@ -2644,7 +3234,7 @@
     userRow.className = 'webchat-message-row user';
     userRow.innerHTML = `
       <div class="msg-group">
-        <div class="regular-message user">${text}</div>
+        <div class="regular-message user" data-edit-token="userBubbleBg">${text}</div>
         <div class="msg-time">Just now</div>
       </div>
       <div class="webchat-avatar user" aria-hidden="true">DT</div>
@@ -2658,7 +3248,7 @@
       botRow.innerHTML = `
         <div class="webchat-avatar bot" aria-hidden="true">AI</div>
         <div class="msg-group">
-          <div class="regular-message bot">Thanks for that. I'm looking into it now - one moment.</div>
+          <div class="regular-message bot" data-edit-token="botBubbleBg">Thanks for that. I'm looking into it now - one moment.</div>
           <div class="msg-time">Just now</div>
         </div>
       `;
@@ -2688,9 +3278,10 @@
       if (chip) applyPreset(chip.dataset.preset);
     });
 
-    // Saved themes row (load / delete chips + save button)
+    // Saved themes row (load / delete chips + save button + import button)
     document.getElementById('savedThemesRow').addEventListener('click', e => {
       if (e.target.closest('#saveThemeBtn')) { saveCurrentTheme(); return; }
+      if (e.target.closest('#importThemeBtn')) { importTheme(); return; }
       const chip = e.target.closest('.saved-theme-chip');
       if (!chip) return;
       const id = chip.dataset.savedId;
@@ -2701,6 +3292,26 @@
     // Copy + Reset
     document.getElementById('copyBtn').addEventListener('click', copySnippet);
     document.getElementById('resetBtn').addEventListener('click', resetTheme);
+
+    // Click-to-edit on preview elements. Capture phase so we run before the inline onclick
+    // demo handlers (sendMsg, selectReply) and can preempt them with stopPropagation.
+    // Demo behaviour is still reachable via the Enter key in the input field.
+    document.querySelector('.chat-wrapper').addEventListener('click', e => {
+      const target = e.target.closest('[data-edit-token]');
+      if (!target) return;
+      e.preventDefault();
+      e.stopPropagation();
+      focusControlForToken(target.dataset.editToken);
+    }, true);
+
+    // Live Cognigy preview overlay
+    document.getElementById('previewLaunchBtn').addEventListener('click', openPreview);
+    document.getElementById('previewModalClose').addEventListener('click', closePreview);
+    document.getElementById('previewLaunchInner').addEventListener('click', launchPreview);
+    document.getElementById('previewClear').addEventListener('click', clearPreview);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('previewModal').hidden) closePreview();
+    });
 
     document.getElementById('chatInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') sendMsg();
@@ -2718,6 +3329,85 @@
     renderSavedThemes();
     generateSnippet();
     updatePresetChips();
+  }
+
+  /* =========================================
+     CLICK-TO-EDIT
+     ========================================= */
+  function focusControlForToken(tokenKey) {
+    const input = document.getElementById(`ctl-${tokenKey}`);
+    if (!input) return;
+    const row = input.closest('.control-row') || input.closest('.control-group');
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Restart the flash animation if it was already applied
+      row.classList.remove('control-row-flash');
+      void row.offsetWidth;
+      row.classList.add('control-row-flash');
+      setTimeout(() => row.classList.remove('control-row-flash'), 1300);
+    }
+    if (input.type === 'color') {
+      // Defer so the scroll completes; opening the picker too early sometimes mis-positions it
+      setTimeout(() => input.click(), 280);
+    } else {
+      input.focus();
+    }
+  }
+
+  /* =========================================
+     LIVE COGNIGY PREVIEW
+     ========================================= */
+  const PREVIEW_KEY = 'cognigy-preview-script-v1';
+
+  function openPreview() {
+    document.getElementById('previewModal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    const saved = localStorage.getItem(PREVIEW_KEY) || '';
+    document.getElementById('previewScriptInput').value = saved;
+    if (saved.trim()) launchPreview();
+  }
+
+  function closePreview() {
+    document.getElementById('previewModal').hidden = true;
+    document.body.style.overflow = '';
+    // Stop the running widget by clearing the iframe
+    document.getElementById('previewFrame').srcdoc = '';
+  }
+
+  function launchPreview() {
+    const script = document.getElementById('previewScriptInput').value;
+    localStorage.setItem(PREVIEW_KEY, script);
+
+    // Use the freshly-generated theme CSS. Defensively re-run generator in case it's stale.
+    generateSnippet();
+    const themeCss = document.getElementById('snippetOutput').textContent;
+    const safeThemeCss = themeCss.replace(/<\/style>/gi, '<\\/style>');
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; min-height: 100vh; background: #fff;
+           display: flex; align-items: center; justify-content: center; color: #888; }
+    .placeholder { text-align: center; max-width: 320px; padding: 24px; line-height: 1.5; font-size: 14px; }
+  </style>
+  <style id="user-theme">${safeThemeCss}</style>
+</head>
+<body>
+  <div class="placeholder">Cognigy widget will appear here once your scripts run. Your theme CSS is already injected.</div>
+  ${script}
+</body>
+</html>`;
+
+    document.getElementById('previewFrame').srcdoc = html;
+  }
+
+  function clearPreview() {
+    if (!confirm('Clear the saved Cognigy script?')) return;
+    document.getElementById('previewScriptInput').value = '';
+    localStorage.removeItem(PREVIEW_KEY);
+    document.getElementById('previewFrame').srcdoc = '';
   }
 
   document.addEventListener('DOMContentLoaded', init);
