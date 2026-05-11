@@ -23,6 +23,7 @@
     --chat-bg: #FFFFFF;
     --chat-header-bg: #1C1B18;
     --chat-header-text: #FFFFFF;
+    --chat-header-border: transparent;
     /* Subtitle auto-tracks header text — fades to 55% so it stays readable on any header bg */
     --chat-header-sub: color-mix(in srgb, var(--chat-header-text) 55%, transparent);
 
@@ -308,6 +309,23 @@
     color: white;
   }
 
+  /* "Cognigy Default" is the factory baseline preset — visually separated from the styled
+     themes with a small left margin + thin divider so users recognize it as a different
+     kind of starting point, even though it produces a real CSS output like the others. */
+  .preset-chip[data-preset="cognigy"] {
+    margin-left: 14px;
+    position: relative;
+  }
+  .preset-chip[data-preset="cognigy"]::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 6px;
+    bottom: 6px;
+    width: 1px;
+    background: var(--separator-color);
+  }
+
   /* Saved themes ("My Themes" section) */
   .saved-themes-row {
     display: flex;
@@ -509,6 +527,27 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
+  }
+
+  /* Subgroup header inside the Style group — visually echoes the h3 group headers ("Sizing"
+     etc.): underline rule, padding above it, generous top margin to give each subsection
+     room to breathe before its heading. Slightly smaller text and lighter weight than h3
+     so the hierarchy still reads as "subsection of Style", not "peer of Sizing". */
+  .subgroup-header {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--page-text);
+    margin: 28px 0 6px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--separator-color);
+    opacity: 0.75;
+  }
+  /* First subgroup (General) tucks closer to the parent Style h3 — already had a divider
+     just above (the h3's own border-bottom), so a big top margin would feel like a gap. */
+  .subgroup-header:first-of-type {
+    margin-top: 10px;
   }
 
   /* "(applies to both modes)" caption shown on shared groups when dark mode is on */
@@ -868,6 +907,7 @@
     opacity: 0.8;
   }
 
+
   /* [data-cognigy-webchat-root] [data-cognigy-webchat].webchat */
   .webchat {
     width: var(--widget-width);
@@ -884,14 +924,23 @@
   }
 
   /* .webchat-header-bar */
+  /* Buttons are absolutely positioned to the right (see rules below), so they don't take
+     part in justify-content. That lets the logo+title group respect --header-justify
+     ('flex-start' for left alignment, 'center' to match Cognigy stock). */
   .webchat-header-bar {
+    position: relative;
     background: var(--chat-header-bg);
-    padding: 16px 18px;
+    /* --chat-header-border defaults to transparent in :root, so this is invisible unless a
+       preset (e.g. Cognigy Default) sets a color via the chatHeaderBorder token. */
+    border-bottom: 1.5px var(--border-style) var(--chat-header-border);
+    /* Right padding reserves space for the absolutely-positioned action buttons. */
+    padding: 16px 72px 16px 18px;
     display: flex;
     align-items: center;
+    justify-content: var(--header-justify, flex-start);
     gap: 12px;
     flex-shrink: 0;
-    transition: background var(--transition);
+    transition: background var(--transition), border-color var(--transition);
   }
 
   /* .webchat-header-logo */
@@ -911,8 +960,10 @@
   }
 
   .header-text {
-    flex: 1;
+    /* No flex:1 so the header group respects --header-justify. Width is content-natural;
+       title still ellipsizes within available space. */
     min-width: 0;
+    overflow: hidden;
   }
 
   /* .webchat-header-title */
@@ -942,48 +993,42 @@
     flex-shrink: 0;
   }
 
-  /* .webchat-header-close-button */
+  /* Header action buttons (minimize, close) — plain icons, no chrome by default. On hover
+     we surface a subtle background derived from header text color so it shows nicely on
+     both colored headers (white-ish overlay) and white headers (dark-ish overlay).
+     Override globally via the headerButtonHover token (e.g. 'transparent' to suppress). */
+  .webchat-header-minimize-button,
   .webchat-header-close-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.08);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255,255,255,0.6);
-    font-size: 16px;
-    transition: background var(--transition), color var(--transition);
-    flex-shrink: 0;
+    color: var(--chat-header-text);
+    opacity: 0.75;
+    transition: opacity var(--transition), background var(--transition);
   }
-
+  .webchat-header-minimize-button:hover,
   .webchat-header-close-button:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    opacity: 1;
+    background: var(--header-button-hover-bg, color-mix(in srgb, var(--chat-header-text) 12%, transparent));
   }
 
-  /* .webchat-header-rating-button */
-  .webchat-header-rating-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.08);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.6);
-    font-size: 14px;
-    transition: background var(--transition), color var(--transition);
-    flex-shrink: 0;
-  }
+  .webchat-header-close-button { right: 16px; }
+  .webchat-header-minimize-button { right: 48px; }
 
-  .webchat-header-rating-button:hover {
-    background: rgba(255,255,255,0.15);
-    color: #FBBF24;
+  /* Icon sizing inside the buttons — slightly larger than .icon's default 1em. */
+  .webchat-header-minimize-button .icon,
+  .webchat-header-close-button .icon {
+    width: 18px;
+    height: 18px;
   }
 
   /* .webchat-chat-history */
@@ -1266,25 +1311,28 @@
 
   /* .webchat-input-button-send */
   /* Button radius derives from input radius minus form padding (6px in this local mock),
-     so the button corner always sits flush inside the form pill regardless of slider value. */
+     so the button corner always sits flush inside the form pill regardless of slider value.
+     Background + icon color fall back to accent/white when the dedicated send-button tokens
+     are unset — preserves the old visual for every preset that doesn't explicitly override. */
   .webchat-input-button-send {
     width: 34px;
     height: 34px;
     border-radius: calc(var(--radius-input) - 6px);
-    background: var(--accent);
+    background: var(--send-button-bg, var(--accent));
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--send-button-icon, white);
     font-size: 15px;
     flex-shrink: 0;
     transition: background var(--transition), transform 0.1s;
   }
 
   .webchat-input-button-send:hover {
-    background: var(--accent-hover);
+    /* Derive hover so transparent buttons get a subtle hover state instead of jumping to accent blue. */
+    background: color-mix(in srgb, var(--send-button-bg, var(--accent)) 85%, black 15%);
   }
 
   .webchat-input-button-send:active {
@@ -1658,14 +1706,15 @@
       <h2>Presets</h2>
       <div class="preset-row" id="presetRow">
         <button class="preset-chip" data-preset="aurora">Aurora</button>
+        <button class="preset-chip" data-preset="tech">Tech</button>
         <button class="preset-chip" data-preset="bloom">Bloom</button>
         <button class="preset-chip" data-preset="hibiscus">Hibiscus</button>
         <button class="preset-chip" data-preset="trailhead">Trailhead</button>
         <button class="preset-chip" data-preset="minimal">Minimal</button>
-        <button class="preset-chip" data-preset="playful">Playful</button>
-        <button class="preset-chip" data-preset="tech">Tech</button>
+        <button class="preset-chip" data-preset="nebula">Nebula</button>
         <button class="preset-chip" data-preset="sunset">Sunset</button>
         <button class="preset-chip" data-preset="ivory">Ivory</button>
+        <button class="preset-chip" data-preset="cognigy" title="Cognigy's stock widget defaults — a neutral starting point for customizing">Cognigy Default</button>
       </div>
     </div>
 
@@ -1723,13 +1772,9 @@
         <div class="webchat-header-logo" data-edit-token="accent" aria-hidden="true">AI</div>
         <div class="header-text">
           <div class="webchat-header-title" data-edit-token="chatHeaderText">NiCE Support</div>
-          <div class="header-status">
-            <span class="status-dot"></span>
-            <span>Online &bull; Avg. reply &lt; 1 min</span>
-          </div>
         </div>
-        <button class="webchat-header-rating-button" aria-label="Rate this chat" title="Rate chat">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <button class="webchat-header-minimize-button" aria-label="Minimize chat" title="Minimize">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
         <button class="webchat-header-close-button" aria-label="Close chat" title="Close">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1999,6 +2044,27 @@
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
       ],
     },
+    sendButtonBg: {
+      label: 'Send button', type: 'color', group: 'Style',
+      cssVar: '--send-button-bg',
+      // Decoupled from accent so presets like "Cognigy Default" can make the send button
+      // transparent while keeping accent blue for the avatar and FAB. Source order: this
+      // rule is appended AFTER accent's into the same selector block, so when set it wins.
+      // Unset → accent's background-color rule applies (preserves existing preset visuals).
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-button-send`, prop: 'background-color' },
+      ],
+    },
+    sendButtonIcon: {
+      label: 'Send button icon', type: 'color', group: 'Style',
+      cssVar: '--send-button-icon',
+      // Drives the SVG arrow color. Emit both fill and stroke so it works whether the
+      // widget's SVG uses fill (v3 default) or stroke (some v2 builds).
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-input-button-send svg, ${SEL_ROOT} .webchat-input-button-send svg path`, prop: 'fill' },
+        { sel: `${SEL_ROOT} .webchat-input-button-send svg, ${SEL_ROOT} .webchat-input-button-send svg path`, prop: 'stroke' },
+      ],
+    },
     accentHover: {
       label: 'Accent (hover)', type: 'color', group: 'Style',
       cssVar: '--accent-hover',
@@ -2056,6 +2122,21 @@
         { sel: `${SEL_ROOT} .webchat-header-close-button svg, ${SEL_ROOT} .webchat-header-close-button svg path, ${SEL_ROOT} .webchat-header-minimize-button svg, ${SEL_ROOT} .webchat-header-minimize-button svg path`, prop: 'fill' },
       ],
     },
+    headerAlign: {
+      label: 'Header alignment', type: 'select', group: 'Style',
+      cssVar: '--header-justify',
+      // Values are CSS flexbox keywords so the var drops straight into justify-content,
+      // both in the local mock and the emitted CSS. Labels stay user-friendly.
+      options: [
+        { label: 'Left', value: 'flex-start' },
+        { label: 'Center', value: 'center' },
+      ],
+      // For the live widget: same justify-content on the header bar. Cognigy's action
+      // buttons in v3 are flex-end aligned and don't fight this rule.
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'justify-content' },
+      ],
+    },
     botBubbleBg: {
       label: 'Bot bubble', type: 'colorWithGradient', group: 'Style',
       cssVar: '--bot-bubble-bg', gradKey: 'botBubbleGradient',
@@ -2106,6 +2187,26 @@
         // Suppress the browser's default :focus outline on the textarea
         { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'outline', literal: 'none !important' },
         { sel: `${SEL_ROOT} .webchat-input-message-input`, prop: 'box-shadow', literal: 'none !important' },
+      ],
+    },
+    headerButtonHover: {
+      label: 'Header button hover', type: 'color', group: 'Style',
+      cssVar: '--header-button-hover-bg',
+      // Background of the minimize/close buttons on hover. When unset, the local mock
+      // derives a subtle overlay via color-mix on --chat-header-text. Set to 'transparent'
+      // to suppress the hover bg entirely (Cognigy Default does this for a stock look).
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-header-close-button:hover, ${SEL_ROOT} .webchat-header-minimize-button:hover`, prop: 'background-color' },
+      ],
+    },
+    chatHeaderBorder: {
+      label: 'Header border (bottom)', type: 'color', group: 'Style',
+      cssVar: '--chat-header-border',
+      // Thin divider line below the header bar. Useful when header bg matches chat bg
+      // (e.g. Cognigy Default with white-on-white) so the regions are visually separated.
+      // Unset → no rule emitted → live widget uses its own default (usually none).
+      snippet: [
+        { sel: `${SEL_ROOT} .webchat-header-bar`, prop: 'border-bottom', transform: buildBorder },
       ],
     },
     inputBorder: {
@@ -2216,7 +2317,7 @@
 
     // ---- Typography ----
     fontFamily: {
-      label: 'Font', type: 'select', group: 'Typography',
+      label: 'Font', type: 'select', group: 'Style',
       cssVar: '--font-main',
       options: [
         { label: 'DM Sans', value: "'DM Sans', system-ui, sans-serif" },
@@ -2235,19 +2336,19 @@
       snippet: [{ sel: SEL_ROOT, prop: 'font-family' }],
     },
     msgFontSize: {
-      label: 'Message text size', type: 'slider', group: 'Typography',
+      label: 'Message text size', type: 'slider', group: 'Style',
       cssVar: '--msg-font-size',
       min: 11, max: 18, unit: 'px',
       snippet: [{ sel: `${SEL_ROOT} .chat-bubble, ${SEL_ROOT} .regular-message`, prop: 'font-size' }],
     },
     headerFontSize: {
-      label: 'Header text size', type: 'slider', group: 'Typography',
+      label: 'Header text size', type: 'slider', group: 'Style',
       cssVar: '--header-font-size',
       min: 12, max: 22, unit: 'px',
       snippet: [{ sel: `${SEL_ROOT} .webchat-header-title`, prop: 'font-size' }],
     },
     inputFontSize: {
-      label: 'Input text size', type: 'slider', group: 'Typography',
+      label: 'Input text size', type: 'slider', group: 'Style',
       cssVar: '--input-font-size',
       min: 11, max: 18, unit: 'px',
       snippet: [{ sel: `${SEL_ROOT} .webchat-input-message-input, ${SEL_ROOT} .webchat-input-message-label`, prop: 'font-size' }],
@@ -2300,39 +2401,82 @@
   const G_ON  = (from, to, dir) => ({ enabled: true,  from, to, dir: dir || 'diag' });
 
   const PRESETS = {
-    trailhead: {
-      name: 'Trailhead',
+    aurora: {
+      name: 'Aurora',
       light: {
-        accent: '#1F4D2C', pageBg: '#FAF6EE', chatBg: '#FFFCF5',
-        chatBgGradient: G_ON('#FFFCF5', '#F4ECDC', 'down'),
-        chatHeaderBg: '#1F4D2C', chatHeaderText: '#FAF6EE',
-        chatHeaderGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
-        botBubbleBg: '#F4ECDC', botBubbleText: '#1F2D1F',
-        botBubbleGradient: G_OFF('#F4ECDC', '#E8DEC5', 'down'),
-        userBubbleBg: '#1F4D2C', userBubbleText: '#FAF6EE',
-        userBubbleGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
-        inputBg: '#F4ECDC', inputText: '#1F2D1F', inputBorder: '#E5DDC0',
-        badgeBg: '#D4753A', toggleBg: '#1F4D2C',
-        shadowColor: '#1F2D1F', shadowStrength: 'soft',
-        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
+        accent: '#5865F2', pageBg: '#F2F3F5', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F2F3F5', 'down'),
+        chatHeaderBg: '#5865F2', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        botBubbleBg: '#F2F3F5', botBubbleText: '#2E3338',
+        botBubbleGradient: G_OFF('#F2F3F5', '#E3E5E8', 'down'),
+        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        inputBg: '#EBEDEF', inputText: '#2E3338', inputBorder: '#D8DADD',
+        badgeBg: '#ED4245', toggleBg: '#5866F2',
+        accentHover: '#4752C4', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.12)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#5865F2', sendButtonIcon: '#FFFFFF',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
+        shadowColor: '#5865F2', shadowStrength: 'soft',
       },
       dark: {
-        accent: '#5FA873', pageBg: '#0F1A12', chatBg: '#1A2920',
-        chatBgGradient: G_ON('#1A2920', '#0F1A12', 'down'),
-        chatHeaderBg: '#0F1A12', chatHeaderText: '#F4ECDC',
-        chatHeaderGradient: G_OFF('#0F1A12', '#1A2920', 'down'),
-        botBubbleBg: '#243B2E', botBubbleText: '#F4ECDC',
-        botBubbleGradient: G_OFF('#243B2E', '#2D4A3A', 'down'),
-        userBubbleBg: '#5FA873', userBubbleText: '#0F1A12',
-        userBubbleGradient: G_OFF('#5FA873', '#4A8C5C', 'down'),
-        inputBg: '#243B2E', inputText: '#F4ECDC', inputBorder: '#2D4A3A',
-        badgeBg: '#E89762', toggleBg: '#5FA873',
-        shadowColor: '#000000', shadowStrength: 'strong',
-        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
+        accent: '#5865F2', pageBg: '#1E1F22', chatBg: '#2B2D31',
+        chatBgGradient: G_ON('#2B2D31', '#1E1F22', 'down'),
+        chatHeaderBg: '#1E1F22', chatHeaderText: '#DCDDDE',
+        chatHeaderGradient: G_OFF('#1E1F22', '#2B2D31', 'down'),
+        botBubbleBg: '#313338', botBubbleText: '#DCDDDE',
+        botBubbleGradient: G_OFF('#313338', '#2B2D31', 'down'),
+        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
+        inputBg: '#383A40', inputText: '#DCDDDE', inputBorder: '#404249',
+        badgeBg: '#F23F42', toggleBg: '#5866F2',
+        accentHover: '#4752C4', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#5865F2', sendButtonIcon: '#FFFFFF',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
+        shadowColor: '#000000', shadowStrength: 'strong',
+      },
+    },
+    tech: {
+      name: 'Tech',
+      light: {
+        accent: '#10B981', pageBg: '#F8FAFC', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F1F5F9', 'down'),
+        chatHeaderBg: '#0F172A', chatHeaderText: '#F8FAFC',
+        chatHeaderGradient: G_OFF('#0F172A', '#1E293B', 'down'),
+        botBubbleBg: '#F1F5F9', botBubbleText: '#0F172A',
+        botBubbleGradient: G_OFF('#F1F5F9', '#E2E8F0', 'down'),
+        userBubbleBg: '#10B981', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
+        inputBg: '#F8FAFC', inputText: '#0F172A', inputBorder: '#E2E8F0',
+        badgeBg: '#10B981', toggleBg: '#0F172A',
+        accentHover: '#059669', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.1)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#10B981', sendButtonIcon: '#FFFFFF',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadowColor: '#0F172A', shadowStrength: 'soft',
+      },
+      dark: {
+        accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
+        chatBgGradient: G_ON('#0F172A', '#020617', 'down'),
+        chatHeaderBg: '#020617', chatHeaderText: '#F1F5F9',
+        chatHeaderGradient: G_OFF('#020617', '#0F172A', 'down'),
+        botBubbleBg: '#1E293B', botBubbleText: '#F1F5F9',
+        botBubbleGradient: G_OFF('#1E293B', '#334155', 'down'),
+        userBubbleBg: '#10B981', userBubbleText: '#020617',
+        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
+        inputBg: '#1E293B', inputText: '#F1F5F9', inputBorder: '#334155',
+        badgeBg: '#34D399', toggleBg: '#34D399',
+        accentHover: '#10B981', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#34D399', sendButtonIcon: '#FFFFFF',
+        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+        shadowColor: '#000000', shadowStrength: 'strong',
       },
     },
     bloom: {
@@ -2348,6 +2492,8 @@
         userBubbleGradient: G_ON('#9B7DEB', '#EC75A9', 'right'),
         inputBg: '#F5F1FF', inputText: '#2D1B69', inputBorder: '#E5DEFF',
         badgeBg: '#EC75A9', toggleBg: '#7B5FE0',
+        accentHover: '#6747D1', chatBorder: 'transparent', chatHeaderBorder: '#EDE7FB', headerButtonHover: 'rgba(123,95,224,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#7B5FE0', sendButtonIcon: '#FFFFFF',
         shadowColor: '#7B5FE0', shadowStrength: 'strong',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
         radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
@@ -2364,6 +2510,8 @@
         userBubbleGradient: G_ON('#9B7DEB', '#EC75A9', 'right'),
         inputBg: '#2D1B69', inputText: '#F5F1FF', inputBorder: '#3D2580',
         badgeBg: '#EC75A9', toggleBg: '#9B7DEB',
+        accentHover: '#7B5FE0', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#9B7DEB', sendButtonIcon: '#FFFFFF',
         shadowColor: '#7B5FE0', shadowStrength: 'strong',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
         radiusChat: 26, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
@@ -2383,6 +2531,8 @@
         userBubbleGradient: G_OFF('#E94545', '#D63838', 'down'),
         inputBg: '#F5F5F7', inputText: '#1A1F36', inputBorder: '#E5E5E9',
         badgeBg: '#E94545', toggleBg: '#E94545',
+        accentHover: '#D63838', chatBorder: 'transparent', chatHeaderBorder: '#EBEBEF', headerButtonHover: 'rgba(233,69,69,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#E94545', sendButtonIcon: '#FFFFFF',
         shadowColor: '#E94545', shadowStrength: 'soft',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
@@ -2399,9 +2549,50 @@
         userBubbleGradient: G_OFF('#FF5A5A', '#E94545', 'down'),
         inputBg: '#252B45', inputText: '#FFFFFF', inputBorder: '#3A405E',
         badgeBg: '#FF5A5A', toggleBg: '#FF5A5A',
+        accentHover: '#E94545', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#FF5A5A', sendButtonIcon: '#FFFFFF',
         shadowColor: '#000000', shadowStrength: 'strong',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 12, radiusBubble: 18, radiusInput: 14, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+      },
+    },
+    trailhead: {
+      name: 'Trailhead',
+      light: {
+        accent: '#1F4D2C', pageBg: '#FAF6EE', chatBg: '#FFFCF5',
+        chatBgGradient: G_ON('#FFFCF5', '#F4ECDC', 'down'),
+        chatHeaderBg: '#1F4D2C', chatHeaderText: '#FAF6EE',
+        chatHeaderGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
+        botBubbleBg: '#F4ECDC', botBubbleText: '#1F2D1F',
+        botBubbleGradient: G_OFF('#F4ECDC', '#E8DEC5', 'down'),
+        userBubbleBg: '#1F4D2C', userBubbleText: '#FAF6EE',
+        userBubbleGradient: G_OFF('#1F4D2C', '#2D6B3F', 'down'),
+        inputBg: '#F4ECDC', inputText: '#1F2D1F', inputBorder: '#E5DDC0',
+        badgeBg: '#D4753A', toggleBg: '#1F4D2C',
+        accentHover: '#163A21', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.1)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#1F4D2C', sendButtonIcon: '#FFFFFF',
+        shadowColor: '#1F2D1F', shadowStrength: 'soft',
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
+        widgetWidth: 380, widgetHeight: 580,
+      },
+      dark: {
+        accent: '#5FA873', pageBg: '#0F1A12', chatBg: '#1A2920',
+        chatBgGradient: G_ON('#1A2920', '#0F1A12', 'down'),
+        chatHeaderBg: '#0F1A12', chatHeaderText: '#F4ECDC',
+        chatHeaderGradient: G_OFF('#0F1A12', '#1A2920', 'down'),
+        botBubbleBg: '#243B2E', botBubbleText: '#F4ECDC',
+        botBubbleGradient: G_OFF('#243B2E', '#2D4A3A', 'down'),
+        userBubbleBg: '#5FA873', userBubbleText: '#0F1A12',
+        userBubbleGradient: G_OFF('#5FA873', '#4A8C5C', 'down'),
+        inputBg: '#243B2E', inputText: '#F4ECDC', inputBorder: '#2D4A3A',
+        badgeBg: '#E89762', toggleBg: '#5FA873',
+        accentHover: '#4A8C5C', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#5FA873', sendButtonIcon: '#FFFFFF',
+        shadowColor: '#000000', shadowStrength: 'strong',
+        fontFamily: "'DM Sans', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 14, radiusBubble: 14, radiusInput: 12, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
       },
     },
@@ -2418,6 +2609,8 @@
         userBubbleGradient: G_OFF('#1C1C1C', '#3A3A3A', 'down'),
         inputBg: '#F8F8F8', inputText: '#1C1C1C', inputBorder: '#E8E8E8',
         badgeBg: '#1C1C1C', toggleBg: '#1C1C1C',
+        accentHover: '#000000', chatBorder: 'transparent', chatHeaderBorder: '#E8E8E8', headerButtonHover: 'rgba(28,28,28,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#1C1C1C', sendButtonIcon: '#FFFFFF',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
         widgetWidth: 380, widgetHeight: 580,
@@ -2434,30 +2627,40 @@
         userBubbleGradient: G_OFF('#3A3A3A', '#5A5A5A', 'down'),
         inputBg: '#1F1F1F', inputText: '#F0F0F0', inputBorder: '#2E2E2E',
         badgeBg: '#F0F0F0', toggleBg: '#3A3A3A',
+        accentHover: '#FFFFFF', chatBorder: 'transparent', chatHeaderBorder: '#2A2A2A', headerButtonHover: 'rgba(240,240,240,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#F0F0F0', sendButtonIcon: '#0A0A0A',
         fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 6, radiusBubble: 8, radiusInput: 8, radiusToggle: 8,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'none',
       },
     },
-    playful: {
-      name: 'Playful',
+    nebula: {
+      name: 'Nebula',
       light: {
-        accent: '#7C3AED', pageBg: '#FFF7FB', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#FCE9F4', 'diag'),
-        chatHeaderBg: '#7C3AED', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_ON('#7C3AED', '#EC4899', 'right'),
-        botBubbleBg: '#F3E8FF', botBubbleText: '#3A1F5A',
-        botBubbleGradient: G_OFF('#F3E8FF', '#FFE4F1', 'right'),
+        accent: '#6B28BD', pageBg: '#E9EAEC', chatBg: '#FFFFFF',
+        chatBgGradient: G_ON('#FFFFFF', '#F2F3F5', 'down'),
+        chatHeaderBg: '#173AA6', chatHeaderText: '#FFFFFF',
+        chatHeaderGradient: G_ON('#7C3AED', '#EC4899', 'radial'),
+        botBubbleBg: '#F3E8FF', botBubbleText: '#422A60',
+        botBubbleGradient: G_ON('#F5F5F5', '#FFE4F1', 'radial'),
         userBubbleBg: '#7C3AED', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_ON('#7C3AED', '#EC4899', 'right'),
-        inputBg: '#FFF0F5', inputText: '#3A1F5A', inputBorder: '#FFDFEF',
+        userBubbleGradient: G_ON('#A921C4', '#EC4899', 'radial'),
+        inputBg: '#FFFFFF', inputText: '#3A1F5A', inputBorder: '#D2D0D1',
         badgeBg: '#EC4899', toggleBg: '#7C3AED',
-        fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
-        radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#7C3AED', shadowStrength: 'strong',
+        accentHover: '#C330B3',
+        chatBorder: '#E2B3E5', botBubbleBorder: '#FFFFFF', userBubbleBorder: '#EA479A',
+        chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.12)',
+        sendButtonBg: '#7C3AED', sendButtonIcon: '#FFFFFF',
+        borderStyle: 'dotted',
+        shadowColor: '#000000', shadowStrength: 'soft',
+        fontFamily: "'Nunito', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 14, inputFontSize: 14,
+        radiusChat: 24, radiusBubble: 24, radiusInput: 15, radiusToggle: 13,
+        widgetWidth: 380, widgetHeight: 800,
       },
+      // Nebula's dark mode adopts Playful's vibe — softer purple/pink palette without the
+      // dotted borders + radial gradients of the light variant. Closer in spirit to Playful
+      // (which was merged in) than a literal dark inversion of the Nebula light values.
       dark: {
         accent: '#A78BFA', pageBg: '#1A0B2E', chatBg: '#251A3E',
         chatBgGradient: G_ON('#251A3E', '#3A1F5A', 'diag'),
@@ -2469,43 +2672,10 @@
         userBubbleGradient: G_ON('#A78BFA', '#F472B6', 'right'),
         inputBg: '#3A2F50', inputText: '#F3E8FF', inputBorder: '#4A3F60',
         badgeBg: '#F472B6', toggleBg: '#A78BFA',
+        accentHover: '#7B5FE0', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#A78BFA', sendButtonIcon: '#FFFFFF',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 15, headerFontSize: 15, inputFontSize: 15,
         radiusChat: 28, radiusBubble: 24, radiusInput: 22, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#000000', shadowStrength: 'strong',
-      },
-    },
-    tech: {
-      name: 'Tech',
-      light: {
-        accent: '#10B981', pageBg: '#F8FAFC', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#F1F5F9', 'down'),
-        chatHeaderBg: '#0F172A', chatHeaderText: '#F8FAFC',
-        chatHeaderGradient: G_OFF('#0F172A', '#1E293B', 'down'),
-        botBubbleBg: '#F1F5F9', botBubbleText: '#0F172A',
-        botBubbleGradient: G_OFF('#F1F5F9', '#E2E8F0', 'down'),
-        userBubbleBg: '#10B981', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
-        inputBg: '#F8FAFC', inputText: '#0F172A', inputBorder: '#E2E8F0',
-        badgeBg: '#10B981', toggleBg: '#0F172A',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#0F172A', shadowStrength: 'soft',
-      },
-      dark: {
-        accent: '#34D399', pageBg: '#020617', chatBg: '#0F172A',
-        chatBgGradient: G_ON('#0F172A', '#020617', 'down'),
-        chatHeaderBg: '#020617', chatHeaderText: '#F1F5F9',
-        chatHeaderGradient: G_OFF('#020617', '#0F172A', 'down'),
-        botBubbleBg: '#1E293B', botBubbleText: '#F1F5F9',
-        botBubbleGradient: G_OFF('#1E293B', '#334155', 'down'),
-        userBubbleBg: '#10B981', userBubbleText: '#020617',
-        userBubbleGradient: G_OFF('#10B981', '#34D399', 'diag'),
-        inputBg: '#1E293B', inputText: '#F1F5F9', inputBorder: '#334155',
-        badgeBg: '#34D399', toggleBg: '#34D399',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2523,6 +2693,8 @@
         userBubbleGradient: G_ON('#FF6E5F', '#E84A8A', 'right'),
         inputBg: '#FFEEDD', inputText: '#5C2A1A', inputBorder: '#FFD3B6',
         badgeBg: '#E84A8A', toggleBg: '#B43AAB',
+        accentHover: '#C42E7E', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.12)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#E84A8A', sendButtonIcon: '#FFFFFF',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
@@ -2539,43 +2711,10 @@
         userBubbleGradient: G_ON('#FF6E5F', '#C42E7E', 'right'),
         inputBg: '#2E1D2C', inputText: '#FFEEDD', inputBorder: '#3A2434',
         badgeBg: '#E84A8A', toggleBg: '#B43AAB',
+        accentHover: '#E84A8A', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#FF6E5F', sendButtonIcon: '#FFFFFF',
         fontFamily: "'Poppins', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 22, radiusBubble: 20, radiusInput: 18, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#000000', shadowStrength: 'strong',
-      },
-    },
-    aurora: {
-      name: 'Aurora',
-      light: {
-        accent: '#5865F2', pageBg: '#F2F3F5', chatBg: '#FFFFFF',
-        chatBgGradient: G_ON('#FFFFFF', '#F2F3F5', 'down'),
-        chatHeaderBg: '#5865F2', chatHeaderText: '#FFFFFF',
-        chatHeaderGradient: G_OFF('#5865F2', '#7983F5', 'down'),
-        botBubbleBg: '#F2F3F5', botBubbleText: '#2E3338',
-        botBubbleGradient: G_OFF('#F2F3F5', '#E3E5E8', 'down'),
-        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
-        inputBg: '#EBEDEF', inputText: '#2E3338', inputBorder: '#D8DADD',
-        badgeBg: '#ED4245', toggleBg: '#5866F2',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
-        widgetWidth: 380, widgetHeight: 580,
-        shadowColor: '#5865F2', shadowStrength: 'soft',
-      },
-      dark: {
-        accent: '#5865F2', pageBg: '#1E1F22', chatBg: '#2B2D31',
-        chatBgGradient: G_ON('#2B2D31', '#1E1F22', 'down'),
-        chatHeaderBg: '#1E1F22', chatHeaderText: '#DCDDDE',
-        chatHeaderGradient: G_OFF('#1E1F22', '#2B2D31', 'down'),
-        botBubbleBg: '#313338', botBubbleText: '#DCDDDE',
-        botBubbleGradient: G_OFF('#313338', '#2B2D31', 'down'),
-        userBubbleBg: '#5865F2', userBubbleText: '#FFFFFF',
-        userBubbleGradient: G_OFF('#5865F2', '#7983F5', 'down'),
-        inputBg: '#383A40', inputText: '#DCDDDE', inputBorder: '#404249',
-        badgeBg: '#F23F42', toggleBg: '#5866F2',
-        fontFamily: "'Inter', system-ui, sans-serif", msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
-        radiusChat: 8, radiusBubble: 8, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
         shadowColor: '#000000', shadowStrength: 'strong',
       },
@@ -2593,6 +2732,8 @@
         userBubbleGradient: G_OFF('#1A1612', '#2A2520', 'diag'),
         inputBg: '#FAF7EE', inputText: '#1A1612', inputBorder: '#EDE5D0',
         badgeBg: '#C9A961', toggleBg: '#1A1612',
+        accentHover: '#000000', chatBorder: 'transparent', chatHeaderBorder: '#F0EAD9', headerButtonHover: 'rgba(26,22,18,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#1A1612', sendButtonIcon: '#FAF7EE',
         shadowColor: '#1A1612', shadowStrength: 'soft',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
@@ -2609,10 +2750,67 @@
         userBubbleGradient: G_OFF('#FAF7EE', '#E8E0D0', 'diag'),
         inputBg: '#352D24', inputText: '#FAF7EE', inputBorder: '#3F3629',
         badgeBg: '#C9A961', toggleBg: '#FAF7EE',
+        accentHover: '#B8983E', chatBorder: 'transparent', chatHeaderBorder: 'transparent', headerButtonHover: 'rgba(255,255,255,0.08)',
+        botBubbleBorder: 'transparent', userBubbleBorder: 'transparent', sendButtonBg: '#C9A961', sendButtonIcon: '#1A1612',
         shadowColor: '#000000', shadowStrength: 'soft',
         fontFamily: '"Helvetica Neue", Arial, sans-serif', msgFontSize: 14, headerFontSize: 14, inputFontSize: 14,
         radiusChat: 8, radiusBubble: 10, radiusInput: 8, radiusToggle: 50,
         widgetWidth: 380, widgetHeight: 580,
+      },
+    },
+    // "Cognigy Default" is a best-effort recreation of Cognigy's stock widget look —
+    // white surfaces, black text, blue accent, no gradients, small radii. Users pick this
+    // when they want a neutral baseline to customize from rather than an opinionated theme.
+    cognigy: {
+      name: 'Cognigy Default',
+      light: {
+        accent: '#2155F0', pageBg: '#FFFFFF', chatBg: '#FFFFFF',
+        chatBgGradient: G_OFF('#FFFFFF', '#FFFFFF', 'down'),
+        chatHeaderBg: '#FFFFFF', chatHeaderText: '#000000', chatHeaderBorder: '#E5E7EB',
+        chatHeaderGradient: G_OFF('#FFFFFF', '#FFFFFF', 'down'),
+        headerAlign: 'center', headerButtonHover: 'transparent',
+        // Bot bubbles are white with a thin gray outline (per screenshot), not a filled gray.
+        botBubbleBg: '#FFFFFF', botBubbleText: '#000000', botBubbleBorder: '#D1D5DB',
+        botBubbleGradient: G_OFF('#FFFFFF', '#FFFFFF', 'down'),
+        // User bubbles are a pale lavender-blue tint of the accent with black text.
+        userBubbleBg: '#E5E8FA', userBubbleText: '#000000',
+        userBubbleGradient: G_OFF('#E5E8FA', '#E5E8FA', 'down'),
+        // Cognigy stock has no visible pill around the input — just a flat text field with
+        // a thin separator above it. 'transparent' suppresses our own border in both the
+        // local mock and the generated CSS, so the input reads as flat in both places.
+        inputBg: '#FFFFFF', inputText: '#000000', inputBorder: 'transparent',
+        // Send button is a gray outlined arrow in the screenshot, not a filled blue square.
+        // sendButtonBg overrides accent's bg fill; sendButtonIcon overrides accent's white SVG fill.
+        sendButtonBg: 'transparent', sendButtonIcon: '#6B7280',
+        badgeBg: '#EF4444', toggleBg: '#2155F0',
+        shadowColor: '#000000', shadowStrength: 'soft',
+        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        msgFontSize: 14, headerFontSize: 16, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 12, radiusInput: 0, radiusToggle: 50,
+        widgetWidth: 440, widgetHeight: 700,
+      },
+      dark: {
+        accent: '#4A7EFF', pageBg: '#0F1115', chatBg: '#1A1D23',
+        chatBgGradient: G_OFF('#1A1D23', '#1A1D23', 'down'),
+        chatHeaderBg: '#1A1D23', chatHeaderText: '#FFFFFF', chatHeaderBorder: '#2A2E36',
+        chatHeaderGradient: G_OFF('#1A1D23', '#1A1D23', 'down'),
+        headerAlign: 'center', headerButtonHover: 'transparent',
+        // Mirror the light pattern: bot bubble matches chat bg with a subtle outline,
+        // user bubble is a dark tint of the accent.
+        botBubbleBg: '#1A1D23', botBubbleText: '#FFFFFF', botBubbleBorder: '#2A2E36',
+        botBubbleGradient: G_OFF('#1A1D23', '#1A1D23', 'down'),
+        userBubbleBg: '#1E2540', userBubbleText: '#FFFFFF',
+        userBubbleGradient: G_OFF('#1E2540', '#1E2540', 'down'),
+        // Match light: no pill border, just a flat input area.
+        inputBg: '#1A1D23', inputText: '#FFFFFF', inputBorder: 'transparent',
+        // Transparent send button with a lighter gray icon for dark mode contrast.
+        sendButtonBg: 'transparent', sendButtonIcon: '#9CA3AF',
+        badgeBg: '#EF4444', toggleBg: '#4A7EFF',
+        shadowColor: '#000000', shadowStrength: 'strong',
+        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        msgFontSize: 14, headerFontSize: 16, inputFontSize: 14,
+        radiusChat: 8, radiusBubble: 12, radiusInput: 0, radiusToggle: 50,
+        widgetWidth: 440, widgetHeight: 700,
       },
     },
   };
@@ -2813,14 +3011,20 @@
 
     // When dark mode isn't included, emit only light — no @media block, no dark rules.
     if (!state.includeDark) {
-      blocks.push(generateModeBlock(state.light));
+      const lightInner = generateModeBlock(state.light);
+      if (lightInner.trim()) blocks.push(lightInner);
     } else {
       if (state.outputMode === 'light' || state.outputMode === 'both') {
-        blocks.push(generateModeBlock(state.light));
+        const lightInner = generateModeBlock(state.light);
+        if (lightInner.trim()) blocks.push(lightInner);
       }
       if (state.outputMode === 'dark' || state.outputMode === 'both') {
         const darkInner = generateModeBlock(state.dark);
-        blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(darkInner, 2)}\n}`);
+        // Skip the @media wrapper entirely when there are no dark rules to wrap — otherwise
+        // the "Cognigy" preset (or any all-default state) would emit an empty @media block.
+        if (darkInner.trim()) {
+          blocks.push(`@media (prefers-color-scheme: dark) {\n${indent(darkInner, 2)}\n}`);
+        }
       }
     }
     return blocks.join('\n\n');
@@ -2863,6 +3067,34 @@
   function isSharedTokenType(t) {
     return t !== 'color' && t !== 'colorWithGradient';
   }
+
+  // Within the 'Style' group, render order is driven by this subgroup map (NOT by
+  // TOKEN_DEFS order). Keeps TOKEN_DEFS structured by snippet-generator concerns while
+  // letting the UI present a more user-friendly layout: General controls at top, then
+  // region-specific sections (Window, Header, Bubbles, Input, Toggle).
+  // Tokens not listed fall back to 'General' and appear at the top.
+  const STYLE_SUBGROUP_ORDER = ['General', 'Window', 'Header', 'Chat Bubbles', 'Input Field', 'Toggle'];
+  const TOKEN_SUBGROUPS = {
+    // General — accent + global appearance + typography that applies across regions
+    accent: 'General', accentHover: 'General', pageBg: 'General',
+    fontFamily: 'General', shadowColor: 'General', shadowStrength: 'General',
+    borderStyle: 'General',
+    // Window — the chat container itself
+    chatBg: 'Window', chatBorder: 'Window', radiusChat: 'Window',
+    // Header — title bar and its controls
+    chatHeaderBg: 'Header', chatHeaderText: 'Header', chatHeaderBorder: 'Header',
+    headerAlign: 'Header', headerButtonHover: 'Header', headerFontSize: 'Header',
+    // Bubbles — bot + user message bubbles share a section
+    botBubbleBg: 'Chat Bubbles', botBubbleText: 'Chat Bubbles', botBubbleBorder: 'Chat Bubbles',
+    userBubbleBg: 'Chat Bubbles', userBubbleText: 'Chat Bubbles', userBubbleBorder: 'Chat Bubbles',
+    radiusBubble: 'Chat Bubbles', msgFontSize: 'Chat Bubbles',
+    // Input — the text input row including the send button
+    inputBg: 'Input Field', inputText: 'Input Field', inputBorder: 'Input Field',
+    radiusInput: 'Input Field', inputFontSize: 'Input Field',
+    sendButtonBg: 'Input Field', sendButtonIcon: 'Input Field',
+    // Toggle — the FAB and its badge
+    toggleBg: 'Toggle', badgeBg: 'Toggle', radiusToggle: 'Toggle',
+  };
 
   function renderControls() {
     const groups = {};
@@ -2933,6 +3165,24 @@
       // Control rows — in simple mode, render the four simple controls instead of the full set
       if (simpleMode && groupName === 'Style') {
         html += renderSimpleControls();
+      } else if (groupName === 'Style') {
+        // Sort by subgroup (per STYLE_SUBGROUP_ORDER) and emit a subsection header when
+        // the subgroup changes. Stable: items within the same subgroup keep TOKEN_DEFS order.
+        const sortedItems = items.map((item, idx) => ({ ...item, idx })).sort((a, b) => {
+          const ai = STYLE_SUBGROUP_ORDER.indexOf(TOKEN_SUBGROUPS[a.key] || 'General');
+          const bi = STYLE_SUBGROUP_ORDER.indexOf(TOKEN_SUBGROUPS[b.key] || 'General');
+          if (ai !== bi) return ai - bi;
+          return a.idx - b.idx;
+        });
+        let lastSubgroup = null;
+        for (const { key, def } of sortedItems) {
+          const sub = TOKEN_SUBGROUPS[key] || 'General';
+          if (sub !== lastSubgroup) {
+            html += `<h4 class="subgroup-header">${sub}</h4>`;
+            lastSubgroup = sub;
+          }
+          html += renderControl(key, def, tokens[key]);
+        }
       } else {
         for (const { key, def } of items) {
           html += renderControl(key, def, tokens[key]);
