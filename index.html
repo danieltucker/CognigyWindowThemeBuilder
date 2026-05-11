@@ -2258,13 +2258,23 @@
       label: 'Width', type: 'slider', group: 'Sizing',
       cssVar: '--widget-width',
       min: 280, max: 480, unit: 'px',
-      snippet: [{ sel: SEL_ROOT, prop: 'width' }],
+      // Clamp against the viewport so the widget stays usable on narrow screens (mobile,
+      // small windows). Subtracts 32px = 16px breathing room on each side. The user's
+      // chosen width applies whenever the viewport has room for it.
+      snippet: [
+        { sel: SEL_ROOT, prop: 'width', transform: v => `min(${v}, calc(100vw - 32px))` },
+      ],
     },
     widgetHeight: {
       label: 'Height', type: 'slider', group: 'Sizing',
       cssVar: '--widget-height',
       min: 400, max: 800, unit: 'px',
-      snippet: [{ sel: SEL_ROOT, prop: 'height' }],
+      // Same idea vertically. The 100px reserve covers OS status bars on top and the
+      // Cognigy FAB (≈60px) plus a small gap below — keeps the widget from overlapping
+      // the toggle on short viewports.
+      snippet: [
+        { sel: SEL_ROOT, prop: 'height', transform: v => `min(${v}, calc(100vh - 100px))` },
+      ],
     },
 
     // ---- Effect ----
