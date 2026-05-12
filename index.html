@@ -1800,10 +1800,10 @@
         </div>
 
         <div class="webchat-quick-reply-template-replies-container">
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Account issue</button>
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Billing question</button>
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Technical issue</button>
-          <button class="webchat-quick-reply-template-reply" data-edit-token="accent" onclick="selectReply(this)">Other</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent">Account issue</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent">Billing question</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent">Technical issue</button>
+          <button class="webchat-quick-reply-template-reply" data-edit-token="accent">Other</button>
         </div>
 
         <div class="webchat-message-row user" style="animation-delay:0.1s">
@@ -1849,7 +1849,7 @@
             aria-label="Message input"
             id="chatInput"
           />
-          <button class="webchat-input-button-send" data-edit-token="accent" aria-label="Send message" onclick="sendMsg()" title="Send">
+          <button class="webchat-input-button-send" data-edit-token="accent" aria-label="Send message" title="Send">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
@@ -4041,6 +4041,15 @@
     document.getElementById('chatInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') sendMsg();
     });
+
+    // Demo quick-reply buttons + send button. These were originally inline onclick
+    // attributes, moved here so the page runs under a CSP that forbids inline scripts
+    // (Cognigy serves transformer responses with `script-src 'self'`).
+    document.querySelectorAll('.webchat-quick-reply-template-reply').forEach(btn => {
+      btn.addEventListener('click', () => selectReply(btn));
+    });
+    const sendBtn = document.querySelector('.webchat-input-button-send');
+    if (sendBtn) sendBtn.addEventListener('click', sendMsg);
 
     // If state restored editingMode='dark', apply data-theme so preview reflects it
     if (state.includeDark && state.editingMode === 'dark') {

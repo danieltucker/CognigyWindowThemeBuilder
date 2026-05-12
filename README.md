@@ -168,13 +168,17 @@ All presets ship gradient-ready (off by default; flip on without re-picking colo
 ## Project layout
 
 ```
-index.html      Everything: markup, styles, controls, generator, preview
-README.md       This file — for users / contributors
-CONFLUENCE.md   Internal documentation, written for non-developers
-images/         Screenshots
+index.html         Standalone builder — open in a browser, no build needed
+endpoint-embed.js  Built artifact: a Cognigy REST transformer that serves a
+                   slimmed version of the builder. See "Hosting via a Cognigy
+                   REST transformer" below. Regenerate with .build-embed.mjs.
+.build-embed.mjs   Build script for endpoint-embed.js
+README.md          This file — for users / contributors
+CONFLUENCE.md      Internal documentation, written for non-developers
+images/            Screenshots
 ```
 
-Single file by design — small enough that a build step would add more friction than value.
+The standalone builder is single-file by design — small enough that a build step would add more friction than value. The Cognigy embed is an optional secondary target with its own build script (described below).
 
 ## How it's wired
 
@@ -199,6 +203,45 @@ myNewItem: {
 ```
 
 Then add a default value to each preset in `PRESETS`. If the control belongs to a specific subgroup (Header, Chat Bubbles, etc.), also add an entry to `TOKEN_SUBGROUPS` in the renderControls section. The control appears in the panel automatically.
+
+## Hosting via a Cognigy REST transformer
+
+If you want to serve the builder from inside Cognigy itself — for instance, to give internal teams a customizer at a Cognigy endpoint URL without standing up a static host — there's a build target for that: `endpoint-embed.js`.
+
+It's a self-contained REST transformer that serves the entire builder (HTML + JS) from a single Cognigy endpoint. Paste it into a REST endpoint's transformer field and visit the endpoint URL in a browser.
+
+### Build
+
+```sh
+node .build-embed.mjs
+```
+
+This reads `index.html`, strips a few features that can't run inside Cognigy's CSP (detailed below), minifies what's left, and writes `endpoint-embed.js` in the project root.
+
+### Embedding
+
+1. Run `node .build-embed.mjs` to produce `endpoint-embed.js`.
+2. In Cognigy, create or edit a REST endpoint.
+3. In the **Transformer** tab, paste the contents of `endpoint-embed.js` and save.
+4. Visit the endpoint URL in a browser — the builder loads, with its JS bundle fetched as `<endpoint-url>?asset=js`.
+
+The CSS export pastes into Cognigy webchat exactly as it does from the standalone version.
+
+### Constraints — what the embed strips and why
+
+Cognigy serves transformer responses under `Content-Security-Policy: script-src 'self'`, and the transformer code field has a payload size validator (~100 KB on most tenants). The build addresses both:
+
+| Constraint | How the embed handles it |
+|---|---|
+| `script-src 'self'` blocks inline `<script>` | The single inline `<script>` block in the source is moved to an external bundle. The transformer routes `?asset=js` to the JS (same origin → `'self'` allows it) and bare requests to the HTML. |
+| `script-src 'self'` blocks `onclick="…"` | The inline `onclick` handlers in the source were converted to `addEventListener` calls in `init()` — that change is in `index.html` itself, so both targets benefit. |
+| Transformer field size limit (~100 KB) | The build drops **4 of the 10 presets** (Bloom, Trailhead, Minimal, Ivory) and the entire **Preview live ↗** feature. Final embed is ~90 KB. |
+
+The Preview live feature is dropped because it can't function under CSP regardless of size: the preview iframe injects an inline `<script>initWebchat(...)</script>` into its `srcdoc` and pulls `webchat.js` from `github.com` — both are blocked by `'self'`.
+
+The 6 surviving presets (Aurora, Tech, Hibiscus, Nebula, Sunset, Cognigy Default) and every customization control are preserved. Saved themes, JSON import/export, CSS/JSON export, dark mode, simple mode, and click-to-edit all work identically to the standalone build.
+
+If your tenant's transformer size cap is tighter than ~100 KB, edit `.build-embed.mjs` to remove additional presets — each is ~2.5 KB.
 
 ## Related Cognigy tools
 
