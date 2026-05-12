@@ -146,18 +146,18 @@ The exported CSS wraps `width` and `height` in `min(...)` against the viewport, 
 
 ## Presets
 
-| Preset | Style |
-|---|---|
-| **Aurora** *(default)* | Discord-inspired blurple on light/dark slate. Clean tech-app feel. |
-| **Tech** | Emerald on slate. Database/dev-tool aesthetic. |
-| **Bloom** | Vibrant violet + pink gradient bubbles. Friendly, lifestyle vibe. |
-| **Hibiscus** | Coral red on white (light) or navy (dark). Editorial. |
-| **Trailhead** | Forest green + cream. Outdoor / utility brand feel. |
-| **Minimal** | Mono palette, no gradients, sharp radii. Restraint. |
-| **Nebula** | Radial purple→magenta gradients, dotted borders. Cosmic, expressive. |
-| **Sunset** | Warm orange→pink gradient header. Lifestyle warmth. |
-| **Ivory** | Cream + ink + champagne. Editorial luxury. |
-| **Cognigy Default** | Mimics the stock Cognigy widget — neutral white surfaces, blue accent, gray send button. The factory baseline for customization. |
+| Preset | Style | Light | Dark |
+|---|---|---|---|
+| **Aurora** *(default)* | Discord-inspired blurple on light/dark slate. Clean tech-app feel. | <img src="images/screenshots/Aurora-Light.png" width="180" alt="Aurora light"> | <img src="images/screenshots/Aurora-Dark.png" width="180" alt="Aurora dark"> |
+| **Tech** | Emerald on slate. Database/dev-tool aesthetic. | <img src="images/screenshots/Tech-Light.png" width="180" alt="Tech light"> | <img src="images/screenshots/Tech-Dark.png" width="180" alt="Tech dark"> |
+| **Bloom** | Vibrant violet + pink gradient bubbles. Friendly, lifestyle vibe. | <img src="images/screenshots/Bloom-Light.png" width="180" alt="Bloom light"> | <img src="images/screenshots/Bloom-Dark.png" width="180" alt="Bloom dark"> |
+| **Hibiscus** | Coral red on white (light) or navy (dark). Editorial. | <img src="images/screenshots/Hibiscus-Light.png" width="180" alt="Hibiscus light"> | <img src="images/screenshots/Hibiscus-Dark.png" width="180" alt="Hibiscus dark"> |
+| **Trailhead** | Forest green + cream. Outdoor / utility brand feel. | <img src="images/screenshots/Trailhead-Light.png" width="180" alt="Trailhead light"> | <img src="images/screenshots/Trailhead-Dark.png" width="180" alt="Trailhead dark"> |
+| **Minimal** | Mono palette, no gradients, sharp radii. Restraint. | <img src="images/screenshots/Minimal-Light.png" width="180" alt="Minimal light"> | <img src="images/screenshots/Minimal-Dark.png" width="180" alt="Minimal dark"> |
+| **Nebula** | Radial purple→magenta gradients, dotted borders. Cosmic, expressive. | <img src="images/screenshots/Nebula-Light.png" width="180" alt="Nebula light"> | <img src="images/screenshots/Nebula-Dark.png" width="180" alt="Nebula dark"> |
+| **Sunset** | Warm orange→pink gradient header. Lifestyle warmth. | <img src="images/screenshots/Sunset-Light.png" width="180" alt="Sunset light"> | <img src="images/screenshots/Sunset-Dark.png" width="180" alt="Sunset dark"> |
+| **Ivory** | Cream + ink + champagne. Editorial luxury. | <img src="images/screenshots/Ivory-Light.png" width="180" alt="Ivory light"> | <img src="images/screenshots/Ivory-Dark.png" width="180" alt="Ivory dark"> |
+| **Cognigy Default** | Mimics the stock Cognigy widget — neutral white surfaces, blue accent, gray send button. The factory baseline for customization. | — | — |
 
 All presets ship gradient-ready (off by default; flip on without re-picking colors). The **Cognigy Default** chip sits at the far right of the row with a small visual separator — it's a factory-reset starting point rather than a styled theme.
 
