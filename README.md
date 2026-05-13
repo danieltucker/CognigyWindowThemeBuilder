@@ -12,6 +12,8 @@ A single-page tool for visually customizing the look of a Cognigy webchat widget
 
 Edit colors, gradients, typography, shape, borders, shadows, hover states, and header alignment with live controls. Preview the widget in real time, optionally test it against a real Cognigy endpoint in a sandboxed live preview, then export a Cognigy-compatible stylesheet (with both light and dark mode rules) - or download the entire preview as a self-contained HTML file you can share with clients.
 
+Visit the Git hosted version [here](https://danieltucker.github.io/CognigyWindowThemeBuilder/)
+
 ![Hero screenshot of the theme builder](images/hero.png)
 
 ## What's in v1.0
