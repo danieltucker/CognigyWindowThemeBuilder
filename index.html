@@ -1600,6 +1600,92 @@
     .preview-script-pane { border-right: none; border-bottom: 1px solid var(--separator-color); }
   }
 
+  /* AI prompt generator modal — reuses .preview-modal-* shell; adds the form grid
+     on the left pane and the read-only prompt preview on the right pane. */
+  .ai-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .ai-field { display: flex; flex-direction: column; gap: 4px; }
+
+  .ai-field label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--page-text-muted); font-weight: 500;
+  }
+
+  .ai-field-optional {
+    text-transform: none; letter-spacing: 0; font-weight: 400; opacity: 0.7;
+  }
+
+  .ai-field input,
+  .ai-field select,
+  .ai-field textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--separator-color);
+    border-radius: 8px;
+    background: var(--page-bg);
+    color: var(--page-text);
+    font-family: var(--font-main);
+    font-size: 13px;
+  }
+
+  .ai-field textarea {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.45;
+    resize: vertical;
+  }
+
+  .ai-field input:focus,
+  .ai-field select:focus,
+  .ai-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .ai-field-hint {
+    font-size: 11px;
+    color: var(--page-text-muted);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  .ai-preview-pane {
+    display: flex;
+    flex-direction: column;
+    background: var(--page-bg);
+    overflow: hidden;
+  }
+
+  .ai-preview-label {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--separator-color);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--page-text-muted);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .ai-preview-pane pre {
+    flex: 1;
+    margin: 0;
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--page-text);
+    background: var(--page-bg);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-y: auto;
+    max-height: none;
+  }
+
   /* Toast for copy feedback */
   .toast {
     position: fixed;
@@ -1877,6 +1963,78 @@
 </div>
 
 <div class="toast" id="toast">Copied!</div>
+
+<div class="preview-modal" id="aiPromptModal" hidden>
+  <div class="preview-modal-content">
+    <header class="preview-modal-header">
+      <div>
+        <h2>Generate theme with AI</h2>
+        <p class="preview-modal-sub">
+          Fill in your customer's brand details. We'll assemble a prompt you can paste
+          into Claude (or any frontier LLM) to get a ready-to-import theme JSON. When
+          the model returns the JSON, paste it via the <strong>+ Import…</strong>
+          button in My Themes.
+        </p>
+      </div>
+      <button class="preview-modal-close" id="aiPromptModalClose" type="button" aria-label="Close">×</button>
+    </header>
+    <div class="preview-modal-body">
+      <div class="preview-script-pane">
+        <div class="ai-form-grid">
+          <div class="ai-field">
+            <label for="aiBrandName">Brand name</label>
+            <input id="aiBrandName" type="text" autocomplete="off" placeholder="e.g. Delta Airlines">
+          </div>
+          <div class="ai-field">
+            <label for="aiDomain">Website / domain <span class="ai-field-optional">(optional)</span></label>
+            <input id="aiDomain" type="text" autocomplete="off" placeholder="e.g. delta.com">
+            <p class="ai-field-hint">Most useful with browsing-enabled models — the LLM can match the actual site palette.</p>
+          </div>
+          <div class="ai-field">
+            <label for="aiColor">Primary color <span class="ai-field-optional">(optional)</span></label>
+            <input id="aiColor" type="text" autocomplete="off" placeholder="#RRGGBB, or leave blank for auto">
+          </div>
+          <div class="ai-field">
+            <label for="aiCategory">Industry / category <span class="ai-field-optional">(optional)</span></label>
+            <input id="aiCategory" type="text" autocomplete="off" placeholder="e.g. premium airline">
+          </div>
+          <div class="ai-field">
+            <label for="aiPersonality">Personality keywords <span class="ai-field-optional">(optional)</span></label>
+            <input id="aiPersonality" type="text" autocomplete="off" placeholder="e.g. bold, premium, corporate">
+          </div>
+          <div class="ai-field">
+            <label for="aiFont">Preferred font</label>
+            <select id="aiFont">
+              <option value="">Auto-pick (recommended)</option>
+              <option value="'DM Sans', system-ui, sans-serif">DM Sans</option>
+              <option value="'Inter', system-ui, sans-serif">Inter</option>
+              <option value="'Roboto', system-ui, sans-serif">Roboto</option>
+              <option value="'Open Sans', system-ui, sans-serif">Open Sans</option>
+              <option value="'Source Sans 3', system-ui, sans-serif">Source Sans 3</option>
+              <option value="'Poppins', system-ui, sans-serif">Poppins</option>
+              <option value="'Nunito', system-ui, sans-serif">Nunito</option>
+              <option value='system-ui, -apple-system, "Segoe UI", sans-serif'>System UI</option>
+              <option value='"Helvetica Neue", Arial, sans-serif'>Helvetica</option>
+              <option value='Georgia, "Times New Roman", serif'>Georgia (serif)</option>
+            </select>
+          </div>
+          <div class="ai-field ai-field-full">
+            <label for="aiNotes">Other notes <span class="ai-field-optional">(optional)</span></label>
+            <textarea id="aiNotes" rows="3" placeholder="e.g. should feel like the customer's existing website, softer than the default"></textarea>
+          </div>
+        </div>
+        <div class="preview-actions">
+          <button class="action-btn primary" id="aiCopyBtn" type="button">Copy prompt</button>
+          <button class="action-btn" id="aiOpenClaudeBtn" type="button" title="Opens Claude.ai in a new tab with the prompt prefilled. The prompt is also copied to your clipboard.">Open in Claude ↗</button>
+        </div>
+      </div>
+      <div class="ai-preview-pane">
+        <div class="ai-preview-label">Generated prompt preview</div>
+        <pre id="aiPromptPreview"></pre>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="preview-modal" id="previewModal" hidden>
   <div class="preview-modal-content">
@@ -3775,6 +3933,7 @@
     }
     html += `<button class="save-theme-btn" id="saveThemeBtn">+ Save as new…</button>`;
     html += `<button class="save-theme-btn" id="importThemeBtn">⇣ Import…</button>`;
+    html += `<button class="save-theme-btn" id="aiThemeBtn" title="Generate a brand-specific theme via an LLM prompt">✨ Generate with AI</button>`;
     row.innerHTML = html;
   }
 
@@ -4006,6 +4165,7 @@
       if (e.target.closest('#saveChangesBtn')) { saveChangesToActiveTheme(); return; }
       if (e.target.closest('#saveThemeBtn')) { saveCurrentTheme(); return; }
       if (e.target.closest('#importThemeBtn')) { importTheme(); return; }
+      if (e.target.closest('#aiThemeBtn')) { openAiPromptModal(); return; }
       const chip = e.target.closest('.saved-theme-chip');
       if (!chip) return;
       const id = chip.dataset.savedId;
@@ -4036,6 +4196,20 @@
     document.getElementById('previewClear').addEventListener('click', clearPreview);
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !document.getElementById('previewModal').hidden) closePreview();
+    });
+
+    // AI prompt generator modal
+    document.getElementById('aiPromptModalClose').addEventListener('click', closeAiPromptModal);
+    document.getElementById('aiCopyBtn').addEventListener('click', copyAiPrompt);
+    document.getElementById('aiOpenClaudeBtn').addEventListener('click', openInClaude);
+    // Live-update the prompt preview as the form changes
+    ['aiBrandName','aiDomain','aiColor','aiCategory','aiPersonality','aiFont','aiNotes'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateAiPromptPreview);
+      if (el && el.tagName === 'SELECT') el.addEventListener('change', updateAiPromptPreview);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('aiPromptModal').hidden) closeAiPromptModal();
     });
 
     document.getElementById('chatInput').addEventListener('keydown', e => {
@@ -4086,6 +4260,228 @@
     } else {
       input.focus();
     }
+  }
+
+  /* =========================================
+     AI PROMPT GENERATOR
+     Builds a self-contained prompt the user can paste into Claude (or any
+     frontier LLM) to get a theme JSON for a specific brand. The model's output
+     flows back through the regular "+ Import…" button — no separate path.
+     ========================================= */
+
+  const AI_PROMPT_FORM_KEY = 'cognigy-ai-prompt-form-v1';
+
+  // Template uses {{placeholders}} (not ${…}) so it can live in a template
+  // literal without interpolation collisions. The full Delta example inside is
+  // the strongest few-shot signal — don't shrink it without testing alternatives.
+  const AI_PROMPT_TEMPLATE = `You are a brand-design assistant. Generate a custom theme JSON for a Cognigy webchat widget using the exact schema below. Output ONE valid JSON object only — no markdown fences, no preamble, no commentary.
+
+# Schema
+
+Top level: { "version": 1, "name": "<Brand Name>", "light": {…}, "dark": {…} }
+
+Each of \`light\` and \`dark\` is a flat object containing these tokens:
+
+Color tokens (each a "#RRGGBB" string, or "transparent", or an "rgba(…)" string):
+  accent, accentHover                   primary brand color + slightly darker variant
+  pageBg                                outer page background (behind the widget)
+  chatBg                                chat widget surface
+  chatHeaderBg, chatHeaderText
+  botBubbleBg, botBubbleText
+  userBubbleBg, userBubbleText
+  inputBg, inputText, inputBorder
+  badgeBg                               unread badge
+  toggleBg                              floating chat button (FAB)
+  chatBorder                            usually "transparent"
+  chatHeaderBorder                      usually "transparent"
+  headerButtonHover                     rgba(…) for minimize/close hover
+  botBubbleBorder, userBubbleBorder     usually "transparent"
+  sendButtonBg, sendButtonIcon
+  shadowColor                           base color for the box-shadow
+
+Gradient tokens (each an object: { "enabled": bool, "from": "#…", "to": "#…", "dir": "down"|"right"|"diag"|"radial" }):
+  chatBgGradient, chatHeaderGradient, botBubbleGradient, userBubbleGradient
+
+Scalar tokens:
+  shadowStrength                        "none" | "soft" | "strong"
+  fontFamily                            CSS family string (see Available fonts)
+  msgFontSize, headerFontSize, inputFontSize    integer 11–22
+  radiusChat                            integer 0–32 (px)
+  radiusBubble                          integer 0–28 (px)
+  radiusInput                           integer 0–24 (px)
+  radiusToggle                          integer 0–50 (% — 50 = perfect circle)
+  widgetWidth                           integer 280–480
+  widgetHeight                          integer 400–800
+
+# Available fonts
+
+'DM Sans' (modern geometric), 'Inter' (clean tech), 'Roboto' (universal), 'Open Sans' (friendly), 'Source Sans 3' (institutional), 'Poppins' (lifestyle), 'Nunito' (soft), 'Helvetica Neue' (classic), 'Georgia' (editorial serif), system-ui.
+
+Pass as the full CSS family string, e.g. "'Inter', system-ui, sans-serif".
+
+# Design principles
+
+1. Primary brand color dominates the header in light mode AND the user bubbles in both modes.
+2. Dark mode is not "darker light mode." Invert the relationship — either the chat surface or the user bubble carries the brand color; everything else is dark neutrals.
+3. Gradients sparingly. Enable subtle gradients on header + user bubbles for a premium feel; leave bot bubbles flat unless the brand is explicitly playful.
+4. Shape matches personality:
+     • Engineering / precision / industrial → radii 4–8
+     • Premium / corporate / airline       → radii 8–12
+     • Standard / modern / SaaS            → radii 12–16
+     • Playful / lifestyle / youth         → radii 16–22
+5. Pick a secondary brand color for the unread badge — a small but identifiable accent pulled from the brand's wider palette.
+6. Ensure WCAG-readable text contrast on every bubble and the input.
+7. In dark mode, prefer "#000000" shadowColor and "strong" shadowStrength.
+8. If a website / domain is provided, treat the brand's actual website as the source of truth. The accent should match the site's primary CTA color, the header color should match the site's nav/header, and surfaces should mirror the site's content background. If you have browsing tools, fetch the site; otherwise reason from your memory of how that domain looks. The provided "primary color" is a hint if the site disagrees with it — favor the live site.
+9. If the brand is well-known but the user didn't specify colors, use your knowledge of the brand's actual identity (logo color, marketing palette).
+
+# Example — Brand: Delta Airlines
+
+{
+  "version": 1,
+  "name": "Delta",
+  "light": {
+    "accent": "#C8102E", "accentHover": "#A60D26",
+    "pageBg": "#F4F5F7", "chatBg": "#FFFFFF",
+    "chatBgGradient": { "enabled": true, "from": "#FFFFFF", "to": "#F8F9FB", "dir": "down" },
+    "chatHeaderBg": "#003366", "chatHeaderText": "#FFFFFF",
+    "chatHeaderGradient": { "enabled": true, "from": "#003366", "to": "#002952", "dir": "right" },
+    "botBubbleBg": "#F4F5F7", "botBubbleText": "#1A1F2E",
+    "botBubbleGradient": { "enabled": false, "from": "#F4F5F7", "to": "#E8EAEF", "dir": "down" },
+    "userBubbleBg": "#C8102E", "userBubbleText": "#FFFFFF",
+    "userBubbleGradient": { "enabled": true, "from": "#C8102E", "to": "#A60D26", "dir": "diag" },
+    "inputBg": "#F4F5F7", "inputText": "#1A1F2E", "inputBorder": "#DDE0E5",
+    "badgeBg": "#C8102E", "toggleBg": "#003366",
+    "chatBorder": "transparent", "chatHeaderBorder": "transparent",
+    "headerButtonHover": "rgba(255,255,255,0.12)",
+    "botBubbleBorder": "transparent", "userBubbleBorder": "transparent",
+    "sendButtonBg": "#C8102E", "sendButtonIcon": "#FFFFFF",
+    "shadowColor": "#003366", "shadowStrength": "soft",
+    "fontFamily": "'Inter', system-ui, sans-serif",
+    "msgFontSize": 14, "headerFontSize": 15, "inputFontSize": 14,
+    "radiusChat": 8, "radiusBubble": 10, "radiusInput": 8, "radiusToggle": 50,
+    "widgetWidth": 380, "widgetHeight": 580
+  },
+  "dark": {
+    "accent": "#E01933", "accentHover": "#C8102E",
+    "pageBg": "#0A0E1A", "chatBg": "#14192B",
+    "chatBgGradient": { "enabled": true, "from": "#14192B", "to": "#0A0E1A", "dir": "diag" },
+    "chatHeaderBg": "#0A0E1A", "chatHeaderText": "#FFFFFF",
+    "chatHeaderGradient": { "enabled": true, "from": "#0A0E1A", "to": "#1A2240", "dir": "right" },
+    "botBubbleBg": "#1F2540", "botBubbleText": "#E8ECF5",
+    "botBubbleGradient": { "enabled": false, "from": "#1F2540", "to": "#262D4E", "dir": "down" },
+    "userBubbleBg": "#E01933", "userBubbleText": "#FFFFFF",
+    "userBubbleGradient": { "enabled": true, "from": "#E01933", "to": "#C8102E", "dir": "diag" },
+    "inputBg": "#1F2540", "inputText": "#E8ECF5", "inputBorder": "#2C3354",
+    "badgeBg": "#E01933", "toggleBg": "#E01933",
+    "chatBorder": "transparent", "chatHeaderBorder": "transparent",
+    "headerButtonHover": "rgba(255,255,255,0.08)",
+    "botBubbleBorder": "transparent", "userBubbleBorder": "transparent",
+    "sendButtonBg": "#E01933", "sendButtonIcon": "#FFFFFF",
+    "shadowColor": "#000000", "shadowStrength": "strong",
+    "fontFamily": "'Inter', system-ui, sans-serif",
+    "msgFontSize": 14, "headerFontSize": 15, "inputFontSize": 14,
+    "radiusChat": 8, "radiusBubble": 10, "radiusInput": 8, "radiusToggle": 50,
+    "widgetWidth": 380, "widgetHeight": 580
+  }
+}
+
+# Brand to theme
+
+Brand name:            {{brand}}
+Website / domain:      {{domain}}
+Primary color (hex):   {{color}}
+Industry / category:   {{category}}
+Personality keywords:  {{personality}}
+Preferred font:        {{font}}
+Other notes:           {{notes}}
+
+Generate the theme JSON now. Output ONLY the JSON object — no preamble, no fences.`;
+
+  function getAiFormValues() {
+    const get = id => {
+      const el = document.getElementById(id);
+      return el && el.value.trim() ? el.value.trim() : '';
+    };
+    return {
+      brand: get('aiBrandName') || '(unspecified — please ask the user)',
+      domain: get('aiDomain') || '(none — reason from brand name)',
+      color: get('aiColor') || 'auto (use your knowledge of the brand)',
+      category: get('aiCategory') || 'auto-detect from brand name',
+      personality: get('aiPersonality') || 'auto-detect',
+      font: get('aiFont') || 'auto-pick',
+      notes: get('aiNotes') || '(none)',
+    };
+  }
+
+  function buildAiPrompt() {
+    const values = getAiFormValues();
+    return AI_PROMPT_TEMPLATE.replace(/\{\{(\w+)\}\}/g, (_, k) => values[k] || '');
+  }
+
+  function updateAiPromptPreview() {
+    const pre = document.getElementById('aiPromptPreview');
+    if (pre) pre.textContent = buildAiPrompt();
+    // Persist form values so reopening the modal restores the last brand
+    try {
+      const form = {};
+      for (const id of ['aiBrandName','aiDomain','aiColor','aiCategory','aiPersonality','aiFont','aiNotes']) {
+        const el = document.getElementById(id);
+        if (el) form[id] = el.value;
+      }
+      localStorage.setItem(AI_PROMPT_FORM_KEY, JSON.stringify(form));
+    } catch (e) {}
+  }
+
+  function restoreAiForm() {
+    try {
+      const raw = localStorage.getItem(AI_PROMPT_FORM_KEY);
+      if (!raw) return;
+      const form = JSON.parse(raw);
+      for (const [id, val] of Object.entries(form)) {
+        const el = document.getElementById(id);
+        if (el && typeof val === 'string') el.value = val;
+      }
+    } catch (e) {}
+  }
+
+  function openAiPromptModal() {
+    document.getElementById('aiPromptModal').hidden = false;
+    document.body.style.overflow = 'hidden';
+    restoreAiForm();
+    updateAiPromptPreview();
+  }
+
+  function closeAiPromptModal() {
+    document.getElementById('aiPromptModal').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  async function copyAiPrompt() {
+    const prompt = buildAiPrompt();
+    try {
+      await navigator.clipboard.writeText(prompt);
+      showToast('Prompt copied to clipboard');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = prompt;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('Prompt copied to clipboard'); }
+      catch (err) { showToast('Copy failed — select manually'); }
+      ta.remove();
+    }
+  }
+
+  function openInClaude() {
+    const prompt = buildAiPrompt();
+    // claude.ai's /new?q= prefill may be truncated for very long prompts, so we
+    // also stash the prompt in the clipboard as a fallback.
+    if (navigator.clipboard) navigator.clipboard.writeText(prompt).catch(() => {});
+    const url = 'https://claude.ai/new?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank', 'noopener');
   }
 
   /* =========================================

@@ -112,6 +112,19 @@ The widget loads in a sandboxed iframe with your theme CSS automatically injecte
 
 Inside the Preview Live modal, click **Download** to save the entire iframe contents as a single HTML file (`cognigy-preview-<preset>.html`). The file is fully self-contained: theme CSS baked in, Cognigy embed scripts included, ready to share with a client by email or upload to a static host.
 
+### Generate a theme with AI
+
+Click **✨ Generate with AI** in the My Themes row to open a guided prompt builder. Fill in your customer's brand details — name, optional website, primary color, industry, personality, preferred font — and the tool assembles a self-contained prompt you can paste into Claude (or any frontier LLM) to get a ready-to-import theme JSON back.
+
+The modal shows the assembled prompt live as you type. Two actions:
+
+- **Copy prompt** — drops the prompt on your clipboard. Paste into any LLM chat.
+- **Open in Claude ↗** — opens [claude.ai](https://claude.ai/new) in a new tab with the prompt prefilled (and also copies it to your clipboard as a fallback, since long URLs can be truncated).
+
+Once the LLM returns the JSON, paste it through the existing **+ Import…** button in My Themes. No new round-trip path.
+
+**Tip:** the prompt explicitly asks the model to favor the brand's actual website palette when a domain is provided. With a browsing-enabled model (Claude with web search, GPT with browsing, etc.) you'll get a much closer match to the real brand than with memory alone.
+
 ### Click-to-edit
 
 Hover any element in the right-side preview - header, bubbles, input field, FAB, badge - and a dashed outline appears. Click and the controls panel scrolls to that element's color picker and opens it. Useful for finding the right control without scrolling through the panel.
@@ -237,9 +250,9 @@ Cognigy serves transformer responses under `Content-Security-Policy: script-src 
 |---|---|
 | `script-src 'self'` blocks inline `<script>` | The single inline `<script>` block in the source is moved to an external bundle. The transformer routes `?asset=js` to the JS (same origin → `'self'` allows it) and bare requests to the HTML. |
 | `script-src 'self'` blocks `onclick="…"` | The inline `onclick` handlers in the source were converted to `addEventListener` calls in `init()` - that change is in `index.html` itself, so both targets benefit. |
-| Transformer field size limit (~100 KB) | The build drops **4 of the 10 presets** (Bloom, Trailhead, Minimal, Ivory) and the entire **Preview live ↗** feature. Final embed is ~90 KB. |
+| Transformer field size limit (~100 KB) | The build drops **4 of the 10 presets** (Bloom, Trailhead, Minimal, Ivory), the entire **Preview live ↗** feature, and the **✨ Generate with AI** prompt builder. Final embed is ~91 KB. |
 
-The Preview live feature is dropped because it can't function under CSP regardless of size: the preview iframe injects an inline `<script>initWebchat(...)</script>` into its `srcdoc` and pulls `webchat.js` from `github.com` - both are blocked by `'self'`.
+The Preview live feature is dropped because it can't function under CSP regardless of size: the preview iframe injects an inline `<script>initWebchat(...)</script>` into its `srcdoc` and pulls `webchat.js` from `github.com` - both are blocked by `'self'`. The AI prompt builder is dropped for size reasons only — it's an agency/consultant tool for theming customers, which is rarely useful when the builder is being served from inside a customer's own Cognigy instance.
 
 The 6 surviving presets (Aurora, Tech, Hibiscus, Nebula, Sunset, Cognigy Default) and every customization control are preserved. Saved themes, JSON import/export, CSS/JSON export, dark mode, simple mode, and click-to-edit all work identically to the standalone build.
 

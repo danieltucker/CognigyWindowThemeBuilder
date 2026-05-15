@@ -65,10 +65,35 @@ console.log(`After theme strip: ${html.length} bytes (was ${origSize})`);
   html = html.replace(re, '');
 }
 
-// Remove the <div class="preview-modal" id="previewModal" ...>...</div> block.
-// Depth-count <div> / </div> from the opening so we find the matching close.
+// Remove the AI prompt generator modal block (depth-counted div matcher).
 {
-  const start = html.indexOf('<div class="preview-modal"');
+  const start = html.indexOf('<div class="preview-modal" id="aiPromptModal"');
+  if (start === -1) {
+    console.warn('WARN: AI prompt modal not found');
+  } else {
+    let i = start + '<div'.length;
+    let depth = 1;
+    while (i < html.length && depth > 0) {
+      const nextOpen = html.indexOf('<div', i);
+      const nextClose = html.indexOf('</div>', i);
+      if (nextClose === -1) break;
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        i = nextOpen + 4;
+      } else {
+        depth--;
+        i = nextClose + 6;
+      }
+    }
+    if (html[i] === '\r') i++;
+    if (html[i] === '\n') i++;
+    html = html.slice(0, start) + html.slice(i);
+  }
+}
+
+// Remove the live-preview modal block (depth-counted div matcher).
+{
+  const start = html.indexOf('<div class="preview-modal" id="previewModal"');
   if (start === -1) {
     console.warn('WARN: preview modal not found');
   } else {
@@ -161,7 +186,51 @@ let scriptBody = html.slice(scriptOpen + '<script>'.length, scriptClose);
   }
 }
 
-console.log(`After preview JS strip: ${scriptBody.length} bytes`);
+// 3b) Strip the AI prompt generator feature for the embed. Same rationale as the
+// live-preview strip: it's an agency/consultant tool that's most useful in the
+// standalone builder, and it adds ~7-8 KB that pushes the embed over the
+// transformer size limit. The standalone index.html keeps the feature.
+
+// AI top-level: banner + template const + 7 functions, ending at openInClaude()
+{
+  const start = scriptBody.indexOf('AI PROMPT GENERATOR');
+  if (start === -1) {
+    console.warn('WARN: AI PROMPT GENERATOR banner not found');
+  } else {
+    let bannerStart = scriptBody.lastIndexOf('/*', start);
+    if (bannerStart === -1) bannerStart = start;
+    while (bannerStart > 0 && /[ \t]/.test(scriptBody[bannerStart - 1])) bannerStart--;
+
+    const fnIdx = scriptBody.indexOf('function openInClaude', start);
+    if (fnIdx === -1) throw new Error('openInClaude function not found');
+    const braceIdx = scriptBody.indexOf('{', fnIdx);
+    let depth = 1, i = braceIdx + 1;
+    while (i < scriptBody.length && depth > 0) {
+      const c = scriptBody[i];
+      if (c === '{') depth++;
+      else if (c === '}') depth--;
+      i++;
+    }
+    while (i < scriptBody.length && /[ \t]/.test(scriptBody[i])) i++;
+    if (scriptBody[i] === '\r') i++;
+    if (scriptBody[i] === '\n') i++;
+    scriptBody = scriptBody.slice(0, bannerStart) + scriptBody.slice(i);
+  }
+}
+
+// The AI button added by renderSavedThemes
+scriptBody = scriptBody.replace(
+  /^\s*html \+= `<button class="save-theme-btn" id="aiThemeBtn"[^`]*`;\s*\n/m,
+  ''
+);
+
+// The AI button branch in the saved-themes click handler
+scriptBody = scriptBody.replace(
+  /^\s*if \(e\.target\.closest\('#aiThemeBtn'\)\)[^\n]*\n/m,
+  ''
+);
+
+console.log(`After AI strip: ${scriptBody.length} bytes`);
 
 const htmlWithExternalScript =
   html.slice(0, scriptOpen) +
