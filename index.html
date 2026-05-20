@@ -2202,7 +2202,11 @@
         // the accent text color (e.g. PlayStation v3 ships a dark-blue button bg that
         // collides with a dark-blue accent, rendering the label unreadable until hover).
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'background-color', literal: 'transparent' },
-        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
+        // Use the `border` shorthand (via buildBorder) instead of just `border-color`.
+        // v3's shipped CSS sets `border: none` on `button._button_mdzr6_1`, which zeroes
+        // both width and style — so a bare `border-color` override is invisible. The
+        // shorthand also keeps the global borderStyle token in play (solid/dashed/none).
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border', transform: buildBorder },
         // v3 wraps the button label in an inner <span> with an Emotion-hashed class
         // (e.g. ._cta-semibold_…) that owns its own color. Target descendants too so
         // our accent color wins over the nested span without needing !important.
