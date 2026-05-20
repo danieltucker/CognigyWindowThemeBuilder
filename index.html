@@ -2197,9 +2197,16 @@
         // v3's send-button SVG defaults to fill: black (no fill attribute in the markup).
         // Force the arrow icon to white so it reads on the colored button.
         { sel: `${SEL_ROOT} .webchat-input-button-send svg, ${SEL_ROOT} .webchat-input-button-send svg path`, prop: 'fill', literal: '#FFFFFF' },
-        // v3 renamed quick-reply class; emit both so light v2 + v3 widgets are styled
+        // v3 renamed quick-reply class; emit both so light v2 + v3 widgets are styled.
+        // Force transparent default background so the widget's shipped fill can't fight
+        // the accent text color (e.g. PlayStation v3 ships a dark-blue button bg that
+        // collides with a dark-blue accent, rendering the label unreadable until hover).
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'background-color', literal: 'transparent' },
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'border-color' },
-        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-reply`, prop: 'color' },
+        // v3 wraps the button label in an inner <span> with an Emotion-hashed class
+        // (e.g. ._cta-semibold_…) that owns its own color. Target descendants too so
+        // our accent color wins over the nested span without needing !important.
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button, ${SEL_ROOT} .webchat-quick-reply-template-button span, ${SEL_ROOT} .webchat-quick-reply-template-reply, ${SEL_ROOT} .webchat-quick-reply-template-reply span`, prop: 'color' },
       ],
     },
     sendButtonBg: {
@@ -2232,7 +2239,9 @@
         { sel: `${SEL_ROOT} .webchat-input-button-send:hover`, prop: 'background-color' },
         { sel: `${SEL_TOGGLE}:hover`, prop: 'background-color' },
         { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'background-color' },
-        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover`, prop: 'color', literal: '#FFFFFF' },
+        // Cover the v3 inner span on hover too — matches the default-state selector
+        // above so the white hover text always wins over any nested color rule.
+        { sel: `${SEL_ROOT} .webchat-quick-reply-template-button:hover, ${SEL_ROOT} .webchat-quick-reply-template-button:hover span, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover, ${SEL_ROOT} .webchat-quick-reply-template-reply:hover span`, prop: 'color', literal: '#FFFFFF' },
       ],
     },
     pageBg: {

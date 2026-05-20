@@ -1,6 +1,6 @@
 # Cognigy Webchat Theme Builder
 
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.1-blue)
 ![Single file](https://img.shields.io/badge/single--file-yes-orange)
 ![No build](https://img.shields.io/badge/build-none-success)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
